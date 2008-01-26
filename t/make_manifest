@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+
+my $dir = ".";
+
+sub slurp {
+    my $file = shift;
+    die "filename is undefined" if !defined $file;
+    open(my $fh, "<", $file) || die "Could not open $file: $!";
+    my $rc = read($fh, my $slurp, 1 + -s $fh);
+    die "File '$file' is still growing" if
+        $rc &&= read($fh, $slurp, 1, length $slurp);
+    die "Error reading from '$file': $!" if !defined $rc;
+    close($fh) || die "Error while closing '$file': $!";
+    $slurp =~ s/\n*\z/\n/;
+    return $slurp;
+}
+
+sub spew {
+    my $file = shift;
+    die "filename is undefined" if !defined $file;
+    open(my $fh, ">", $file) || die "Could not create '$file': $!";
+    eval {
+        print($fh @_) || die "Error writing to '$file': $!";
+        close($fh)    || die "Error closing '$file': $!";
+    };
+    if ($@) {
+        undef $fh;
+        unlink($file) || die "Could not unlink '$file' after $@";
+        die $@;
+    }
+}
+
+my $manifest = slurp("$dir/MANIFEST");
+opendir(my $dh, $dir) || die "Could not opendir '$dir': $!";
+for (sort <$dir/*/MANIFEST>) {
+    my ($subdir) = m!^\Q$dir\E/([^/]+)/MANIFEST\z!i or
+        die "Weird, '$_' matches '$dir/*/MANIFEST'";
+    my $contents = slurp("$dir/$subdir/MANIFEST");
+    $contents =~ s!^!$subdir/!mg;
+    $manifest =~ s!^\Q$subdir\E/.*\n!!mg;
+    $manifest .= $contents;
+}
+# $manifest = join("", sort $manifest =~ /^.*\n/mg);
+my $tmp_file = "$dir/MANIFEST.new.$$";
+spew($tmp_file, $manifest);
+if (!rename($tmp_file, "$dir/MANIFEST")) {
+    unlink($tmp_file);
+    die "Could not rename $tmp_file to $dir/MANIFEST: $!";
+}

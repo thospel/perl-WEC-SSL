@@ -1,0 +1,6 @@
+Digest.xs
+Makefile.PL
+lib/WEC/SSL/Digest.pm
+t/00_load.t
+t/01_Digest.t
+MANIFEST

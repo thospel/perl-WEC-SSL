@@ -1,0 +1,7 @@
+taint propegation of inplace operators
+
+report:
+mod_pow with b=0 has bugs (it doesn't look at m anymore, wrong for m=-1,0,1)
+mask_bits with bits mod BN_BITS2 == 0 is buggy
+#if defined(S_IFBLK) && defined(S_IFCHR)
+	  if (sb.st_mode & (S_IFBLK | S_IFCHR)) {

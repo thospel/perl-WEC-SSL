@@ -1,0 +1,138 @@
+TYPEMAP
+wec_bio		T_PTROBJ_BIO
+wec_bio_file	T_PTROBJ_BIO_FILE
+wec_bio_socket	T_PTROBJ_BIO_SOCKET
+wec_bio_b64	T_PTROBJ_BIO_B64
+wec_bio_memory	T_PTROBJ_BIO_MEMORY
+wec_bio_cipher	T_PTROBJ_BIO_CIPHER
+wec_bio_encrypt	T_PTROBJ_BIO_ENCRYPT
+wec_bio_decrypt	T_PTROBJ_BIO_DECRYPT
+wec_bio_pair	T_PTROBJ_BIO_PAIR
+wec_bio_buffer	T_PTROBJ_BIO_BUFFER
+wec_bio_chain	T_PTROBJ_BIO_CHAIN
+
+wec_ssl_context	T_PTROBJ_SSL_CONTEXT
+wec_ssl		T_PTROBJ_SSL
+
+wec_x509	T_PTROBJ_X509
+
+wec_cipher_context	T_PTROBJ_CIPHER_CONTEXT
+wec_encrypt	T_PTROBJ_ENCRYPT
+wec_decrypt	T_PTROBJ_DECRYPT
+
+wec_digest_context	T_PTROBJ_DIGEST_CONTEXT
+wec_hmac	T_PTROBJ_HMAC
+
+wec_engine	T_PTROBJ_ENGINE
+
+const struct wec_bigint *	T_PTROBJ_BIGINT
+wec_reciprocal	T_PTROBJ_RECIPROCAL
+wec_montgomery	T_PTROBJ_MONTGOMERY
+
+INPUT
+T_PTROBJ_BIO
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio\", \"$var\");
+T_PTROBJ_BIO_FILE
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::File\", \"$var\");
+T_PTROBJ_BIO_SOCKET
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Socket\", \"$var\");
+T_PTROBJ_BIO_B64
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::B64\", \"$var\");
+T_PTROBJ_BIO_MEMORY
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Memory\", \"$var\");
+T_PTROBJ_BIO_CIPHER
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Cipher\", \"$var\");
+T_PTROBJ_BIO_DECRYPT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Decrypt\", \"$var\");
+T_PTROBJ_BIO_ENCRYPT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Encrypt\", \"$var\");
+T_PTROBJ_BIO_PAIR
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Pair\", \"$var\");
+T_PTROBJ_BIO_BUFFER
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Bio::Buffer\", \"$var\");
+T_PTROBJ_BIO_CHAIN
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::BioChain\", \"$var\");
+
+T_PTROBJ_SSL_CONTEXT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::SSLContext\", \"$var\");
+T_PTROBJ_SSL
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::SSL\", \"$var\");
+
+T_PTROBJ_X509
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::X509\", \"$var\");
+
+T_PTROBJ_CIPHER_CONTEXT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::CipherContext\", \"$var\");
+T_PTROBJ_ENCRYPT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Encrypt\", \"$var\");
+T_PTROBJ_DECRYPT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Decrypt\", \"$var\");
+
+T_PTROBJ_DIGEST_CONTEXT
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::DigestContext\", \"$var\");
+T_PTROBJ_HMAC
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::HMAC\", \"$var\");
+
+T_PTROBJ_ENGINE
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Engine\", \"$var\");
+
+T_PTROBJ_BIGINT
+        $var = SV_BIGINT($arg, \"$var\");
+T_PTROBJ_RECIPROCAL
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Reciprocal\", \"$var\");
+T_PTROBJ_MONTGOMERY
+        $var = C_OBJECT($arg, PACKAGE_BASE \"::Montgomery\", \"$var\");
+
+OUTPUT
+T_PTROBJ_BIO
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio\", (void*)$var);
+T_PTROBJ_BIO_FILE
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::File\", (void*)$var);
+T_PTROBJ_BIO_SOCKET
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Socket\", (void*)$var);
+T_PTROBJ_BIO_64
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::B64\", (void*)$var);
+T_PTROBJ_BIO_MEMORY
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Memory\", (void*)$var);
+T_PTROBJ_BIO_CIPHER
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Cipher\", (void*)$var);
+T_PTROBJ_BIO_ENCRYPT
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Encrypt\", (void*)$var);
+T_PTROBJ_BIO_DECRYPT
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Decrypt\", (void*)$var);
+T_PTROBJ_BIO_PAIR
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Pair\", (void*)$var);
+T_PTROBJ_BIO_BUFFER
+	sv_setref_pv($arg, PACKAGE_BASE \"::Bio::Buffer\", (void*)$var);
+T_PTROBJ_BIO_CHAIN
+	sv_setref_pv($arg, PACKAGE_BASE \"::BioChain\", (void*)$var);
+
+T_PTROBJ_SSL_CONTEXT
+	sv_setref_pv($arg, PACKAGE_BASE \"::Context\", (void*)$var);
+T_PTROBJ_SSL
+	sv_setref_pv($arg, \"WEC::SSL\", (void*)$var);
+
+T_PTROBJ_X509
+	sv_setref_pv($arg, PACKAGE_BASE \"::X509\", (void*)$var);
+
+T_PTROBJ_CIPHER_CONTEXT
+	sv_setref_pv($arg, PACKAGE_BASE \"::CipherContext\", (void*)$var);
+T_PTROBJ_ENCRYPT
+	sv_setref_pv($arg, PACKAGE_BASE \"::Encrypt\", (void*)$var);
+T_PTROBJ_DECRYPT
+	sv_setref_pv($arg, PACKAGE_BASE \"::Decrypt\", (void*)$var);
+
+T_PTROBJ_DIGEST_CONTEXT
+	sv_setref_pv($arg, PACKAGE_BASE \"::DigestContext\", (void*)$var);
+T_PTROBJ_HMAC
+	sv_setref_pv($arg, PACKAGE_BASE \"::HMAC\", (void*)$var);
+
+T_PTROBJ_ENGINE
+	sv_setref_pv($arg, PACKAGE_BASE \"::Engine\", (void*)$var);
+
+T_PTROBJ_BIGINT
+	sv_setref_pv($arg, PACKAGE_BASE \"::BigInt\", (void*)$var);
+T_PTROBJ_RECIPROCAL
+	sv_setref_pv($arg, PACKAGE_BASE \"::Reciprocal\", (void*)$var);
+T_PTROBJ_MONTGOMERY
+	sv_setref_pv($arg, PACKAGE_BASE \"::Montgomery\", (void*)$var);
