@@ -81,9 +81,9 @@ t/082_rand.t
 t/083_pseudo_rand_bits.t
 t/083_rand_bits.t
 t/090_print.t
-t/091_print_HEX.t
 t/091_print_hex.t
-t/092_bio_print_HEX.t
+t/092_print_HEX.t
+t/093_bio_print_HEX.t
 t/100_reciprocal_new.t
 t/101_reciprocal_sensitive.t
 t/102_recp_tainted.t

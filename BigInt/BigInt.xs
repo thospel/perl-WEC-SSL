@@ -1,3 +1,6 @@
+#define NEED_sv_2pv_flags
+#define NEED_vnewSVpvf
+#define NEED_warner
 #include "wec_ssl.h"
 #include <limits.h>
 
@@ -16,7 +19,7 @@ static const struct wec_bigint ZERO = {
 #define NEW_BIGINT(bigint, object)	\
     NEW_CLASS(bigint, object, PACKAGE_BASE "::BigInt")
 #define NEW_CLASS(bigint, object, class) STMT_START {	\
-    New(__LINE__ % 1000, bigint, 1, struct wec_bigint);	\
+    Newx(bigint, 1, struct wec_bigint);	\
     if (SENSITIVE) bigint->sensitive = 0;		\
     BN_init(&(bigint)->num);				\
     (object) = sv_newmortal();				\
@@ -264,7 +267,7 @@ static void big_from_pv(pTHX_ BIGNUM *big, SV *sv, const char *context) {
             return;
         }
         if (dot-string > INT_MAX-1) croak("Overflow");
-        New(__LINE__ % 1000, tmp, dot-string+1, char);
+        Newx(tmp, dot-string+1, char);
         Copy(string, tmp, dot-string, char);
         tmp[dot-string] = 0;
         rc = BN_dec2bn(&big, tmp);
@@ -279,7 +282,7 @@ static void big_from_pv(pTHX_ BIGNUM *big, SV *sv, const char *context) {
                 exponent = 0;
             }
             if (exp-string > INT_MAX) croak("Overflow");
-            New(__LINE__ % 1000, tmp, exp-string, char);
+            Newx(tmp, exp-string, char);
             Copy(string, tmp, dot-string, char);
             Copy(dot+1, tmp+(dot-string), exp-dot-1, char);
             tmp[exp-string-1] = 0;
@@ -316,7 +319,7 @@ static wec_bigint sv_bigint(pTHX_ SV **sv,
         return result;
     }
 
-    New(__LINE__ % 1000, bigint, 1, struct wec_bigint);
+    Newx(bigint, 1, struct wec_bigint);
     if (SENSITIVE) bigint->sensitive = 0;
     big = &bigint->num;
     BN_init(big);
@@ -520,7 +523,7 @@ static void sv_typed_int(pTHX_ typed_int *typed, SV *value,
         }
     }
 
-    New(__LINE__ % 1000, bigint, 1, struct wec_bigint);
+    Newx(bigint, 1, struct wec_bigint);
     if (SENSITIVE) bigint->sensitive = 0;
     big = &bigint->num;
     BN_init(big);
@@ -2679,7 +2682,7 @@ and(SV *arg1, SV *arg2, SV *how=NULL)
             /* One extra U8 for possible result sign fixup */
             len = len_a + len_b + 1;
             if (len <= 0) croak("length overflow");
-            New(__LINE__ % 1000, buf, len, U8);
+            Newx(buf, len, U8);
             buf_a = buf+1;
             buf_b = buf_a + len_a;
             buf_e = buf_b + len_b;
@@ -2883,7 +2886,7 @@ new(SV *class, SV *m)
     bigint = SV_BIGINT(m, "m");
     if (BN_is_zero(&bigint->num)) croak("Reciprocal of 0");
 
-    New(__LINE__ % 1000, reciprocal, 1, struct wec_reciprocal);
+    Newx(reciprocal, 1, struct wec_reciprocal);
     BN_RECP_CTX_init(&reciprocal->ctx);
     object = sv_newmortal();
     sv_setref_pv(object, class_name, (void*) reciprocal);
@@ -3028,7 +3031,7 @@ new(SV *class, SV *m)
     /* Avoid an infinite loop */
     if (BN_is_zero(&bigint->num)) croak("Montgomery of 0");
 
-    New(__LINE__ % 1000, montgomery, 1, struct wec_montgomery);
+    Newx(montgomery, 1, struct wec_montgomery);
     BN_MONT_CTX_init(&montgomery->ctx);
     object = sv_newmortal();
     sv_setref_pv(object, class_name, (void*) montgomery);

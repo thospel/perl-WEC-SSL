@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 # Path testing derived from Net::SSLeay
 my $openssl_path;
 # Maybe hunt for a specific recent enough version...
-for my $dir (split /:/, $ENV{PATH}) {
+for my $dir (split m{:}, $ENV{PATH}) {
     if (-f "$dir/openssl" && -x _ || -f "$dir/openssl.exe" && -x _) {
         $dir =~ s!/s?bin/*\z!!;
         $openssl_path = $dir;

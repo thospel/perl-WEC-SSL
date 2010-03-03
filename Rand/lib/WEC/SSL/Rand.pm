@@ -7,7 +7,7 @@ use POSIX  qw(O_WRONLY O_CREAT O_EXCL ENOENT EEXIST EINTR);
 use Socket qw(AF_UNIX SOCK_STREAM pack_sockaddr_un);
 use Fcntl  qw(S_IMODE);
 
-our $VERSION = "0.01";
+our $VERSION = "1.000";
 
 # Load XS prerequisites
 use WEC::SSL::Utils qw(tainted fchmod);

@@ -12,7 +12,8 @@ static int bio_write(pTHX_ BIO *bio, SV *bufsv) {
     buf = SvPV(bufsv, len);
     if (SvUTF8(bufsv)) {
         U32 utf8_flags  = ckWARN(WARN_UTF8) ? 0 : UTF8_ALLOW_ANY;
-        New(__LINE__ % 1000, temp, len, U8);
+        Newx(temp, len, U8);
+        Perl_croak_nocontext(PL_memory_wrap);
         to = temp;
         buf_end = buf + len;
         for (from=buf; from < buf_end; from+=retlen) {
@@ -179,7 +180,7 @@ new(char *class, char *filename, char *mode)
     bio = BIO_new_file(filename, mode);
     if (!bio) croak("Could not create BIO_file");
 
-    New(__LINE__ % 1000, bio_file, 1, struct wec_bio);
+    Newx(bio_file, 1, struct wec_bio);
     bio_file->bio = bio;
     bio_file->chain = NULL;
     bio_file->ssl = NULL;
@@ -236,7 +237,7 @@ new(char *class, SV *socket)
     bio = BIO_new_socket(fd, BIO_NOCLOSE);
     if (!bio) croak("Could not create BIO_socket");
 
-    New(__LINE__ % 1000, bio_socket, 1, struct wec_bio_socket);
+    Newx(bio_socket, 1, struct wec_bio_socket);
     bio_socket->bio = bio;
     bio_socket->chain = NULL;
     bio_socket->ssl = NULL;
@@ -266,7 +267,7 @@ new(char *class)
     bio = BIO_new(BIO_f_buffer());
     if (!bio) croak("Could not create BIO_buffer");
 
-    New(__LINE__ % 1000, bio_buffer, 1, struct wec_bio);
+    Newx(bio_buffer, 1, struct wec_bio);
     bio_buffer->bio = bio;
     bio_buffer->chain = NULL;
     bio_buffer->ssl = NULL;
@@ -295,7 +296,7 @@ new(char *class, long size=0)
       }
     }
 
-    New(__LINE__ % 1000, bio_pair, 1, struct wec_bio_pair);
+    Newx(bio_pair, 1, struct wec_bio_pair);
     bio_pair->bio = bio;
     bio_pair->chain = NULL;
     bio_pair->ssl = NULL;
@@ -348,7 +349,7 @@ new(char *class)
     bio = BIO_new(BIO_f_base64());
     if (!bio) croak("Could not create BIO_b64");
 
-    New(__LINE__ % 1000, bio_b64, 1, struct wec_bio);
+    Newx(bio_b64, 1, struct wec_bio);
     bio_b64->bio = bio;
     bio_b64->chain = NULL;
     bio_b64->ssl = NULL;
@@ -369,7 +370,7 @@ new(char *class)
     bio = BIO_new(BIO_s_mem());
     if (!bio) croak("Could not create BIO_mem");
 
-    New(__LINE__ % 1000, bio_memory, 1, struct wec_bio);
+    Newx(bio_memory, 1, struct wec_bio);
     bio_memory->bio = bio;
     bio_memory->chain = NULL;
     bio_memory->ssl = NULL;
@@ -453,7 +454,7 @@ new(char *class, ...)
     bio = BIO_new(BIO_f_cipher());
     if (!bio) croak("Could not create BIO_cipher");
 
-    New(__LINE__ % 1000, bio_cipher, 1, struct wec_bio);
+    Newx(bio_cipher, 1, struct wec_bio);
     bio_cipher->bio = bio;
     bio_cipher->chain = NULL;
     bio_cipher->ssl = NULL;
@@ -476,7 +477,7 @@ new(char *class)
   PREINIT:
     wec_bio_chain bio_chain;
   CODE:
-    New(__LINE__ % 1000, bio_chain, 1, struct wec_bio_chain);
+    Newx(bio_chain, 1, struct wec_bio_chain);
     bio_chain->nr_bio = 0;
     bio_chain->nr_allocated = 0;
     bio_chain->bio = NULL;
