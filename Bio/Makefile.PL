@@ -97,8 +97,7 @@ use vars qw(%postamble);
 
 BEGIN { undef &postamble }
 sub postamble {
-    return shift->SUPER::postamble() . join("
-", @postamble{sort {uc $a cmp uc $b || $a cmp $b } keys %postamble});
+    return shift->SUPER::postamble() . join("\n", @postamble{sort {uc $a cmp uc $b || $a cmp $b } keys %postamble});
 }
 }
 # END MY
