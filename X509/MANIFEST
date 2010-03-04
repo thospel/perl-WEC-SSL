@@ -1,6 +1,7 @@
-X509.xs
+MANIFEST
+MANIFEST.SKIP
 Makefile.PL
+X509.xs
 lib/WEC/SSL/X509.pm
 t/00_load.t
 t/01_X509.t
-MANIFEST

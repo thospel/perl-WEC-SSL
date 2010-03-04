@@ -1,5 +1,6 @@
 Bio.xs
 MANIFEST
+MANIFEST.SKIP
 Makefile.PL
 lib/WEC/SSL/Bio.pm
 lib/WEC/SSL/Bio/B64.pm

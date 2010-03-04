@@ -1,5 +1,6 @@
 BigInt.xs
 MANIFEST
+MANIFEST.SKIP
 Makefile.PL
 lib/WEC/SSL/BigInt.pm
 lib/WEC/SSL/Montgomery.pm

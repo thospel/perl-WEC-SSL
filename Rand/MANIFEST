@@ -1,4 +1,5 @@
 MANIFEST
+MANIFEST.SKIP
 Makefile.PL
 Rand.xs
 lib/WEC/SSL/Rand.pm
