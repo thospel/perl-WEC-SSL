@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 02_tainted.t'
-
+# `make test'. After `make install' it should work as `perl -T 02_taint.t'
 use strict;
 use warnings;
 use Scalar::Util ();
@@ -16,7 +15,7 @@ BEGIN { use_ok("WEC::SSL::Engine") };
 }
 
 my $taint = substr("$0$^W", 0, 0);
-my @methods = qw(tainted);
+my @methods = qw(taint);
 can_ok("WEC::SSL::Engine", @methods);
 for my $method (@methods) {
     next if ! __PACKAGE__->can($method);
@@ -26,39 +25,39 @@ for my $method (@methods) {
 my ($result, $tmp);
 
 $tmp = $result = WEC::SSL::Engine->by_name("dynamic");
-ok(!$result->tainted);
-ok(!$result->tainted(1));
-ok($result->tainted(1));
-ok($result->tainted);
+ok(!$result->taint);
+ok(!$result->taint(1));
+ok($result->taint(1));
+ok($result->taint);
 ok(Scalar::Util::tainted($result));
 ok(Scalar::Util::tainted($$result));
 ok(!Scalar::Util::tainted($tmp));
 ok(Scalar::Util::tainted($$tmp));
-ok($result->tainted(0));
-ok(!$result->tainted(0));
-ok(!$result->tainted);
+ok($result->taint(0));
+ok(!$result->taint(0));
+ok(!$result->taint);
 ok(!Scalar::Util::tainted($result));
 ok(!Scalar::Util::tainted($$result));
 ok(!Scalar::Util::tainted($tmp));
 ok(!Scalar::Util::tainted($$tmp));
-$result->tainted(28);
-ok($result->tainted);
-$result->tainted(undef);
-ok(!$result->tainted);
-$result->tainted([]);
-ok($result->tainted);
-$result->tainted("0");
-ok(!$result->tainted);
+$result->taint(28);
+ok($result->taint);
+$result->taint(undef);
+ok(!$result->taint);
+$result->taint([]);
+ok($result->taint);
+$result->taint("0");
+ok(!$result->taint);
 
 $tmp = WEC::SSL::Engine->by_name("dynamic");
-$tmp->tainted(1);
-$result->tainted($tmp);
-ok($result->tainted);
+$tmp->taint(1);
+$result->taint($tmp);
+ok($result->taint);
 
 $tmp = 0 . $taint;
-eval { $result->tainted($tmp) };
+eval { $result->taint($tmp) };
 like($@, qr/^Turning tainting off using a tainted value at /i);
-ok($result->tainted);
+ok($result->taint);
 
 is($result->name, "dynamic");
 

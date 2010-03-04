@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 82_pseudo_rand.t'
-
+# `make test'. After `make install' it should work as `perl -T 082_pseudo_rand.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -30,7 +29,7 @@ $val = Big->new(1);
 $result = $val->pseudo_rand;
 is("$result", 0);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(0);
 $result = eval { $val->pseudo_rand };
@@ -55,14 +54,14 @@ $val->sensitive(1);
 $result = $val->pseudo_rand;
 ok($result < $val);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(5);
-$val->tainted(1);
+$val->taint(1);
 $result = $val->pseudo_rand;
 ok($result < $val);
 ok(!$result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

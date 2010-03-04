@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 02_copy.t'
-
+# `make test'. After `make install' it should work as `perl -T 002_copy.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -28,7 +27,7 @@ $result = WEC::SSL::BigInt::copy(0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $result = WEC::SSL::BigInt::copy(3);
 isa_ok($result, "WEC::SSL::BigInt");
@@ -50,35 +49,35 @@ $result = WEC::SSL::BigInt::copy($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $tmp->sensitive(1);
 $result = WEC::SSL::BigInt::copy($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
-$tmp->tainted(1);
+$tmp->taint(1);
 $result = WEC::SSL::BigInt::copy($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok($result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
 $tmp->sensitive(0);
 $result = WEC::SSL::BigInt::copy($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok(!$result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
-$tmp->tainted(0);
+$tmp->taint(0);
 $result = WEC::SSL::BigInt::copy($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

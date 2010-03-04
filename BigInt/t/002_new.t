@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 02_new.t'
-
+# `make test'. After `make install' it should work as `perl -T 002_new.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -293,20 +292,20 @@ ok(tainted($result));
 my $r = "$result";
 ok(tainted($r));
 
-$result->tainted(0);
+$result->taint(0);
 ok(!tainted($result));
 $r = "$result";
 ok(!tainted($r));
 
-$result->tainted(1);
+$result->taint(1);
 ok(tainted($result));
 $r = "$result";
 ok(tainted($r));
 
-$result->tainted(0);
+$result->taint(0);
 ok(!tainted($result));
 
-$result->tainted(1);
+$result->taint(1);
 ok(tainted($result));
 $r = "$result";
 ok(tainted($r));
@@ -317,7 +316,7 @@ $r = "$tmp";
 ok(tainted($r));
 is($r, 1234);
 
-eval { $result->tainted($taint) };
+eval { $result->taint($taint) };
 like($@, qr/Turning tainting off using a tainted value/i);
 
 # Using add to force perl_int conversions
@@ -437,7 +436,7 @@ like($@, qr/Cannot convert NaN to an integer at/i);
 is(@warns, 0);
 $result = WEC::SSL::BigInt->new(undef);
 is(@warns, 1);
-like($warns[0], qr/^Use of uninitialized value at /i);
+like($warns[0], qr/^Use of uninitialized value in subroutine entry at /i);
 @warns=();
 is("$result", 0);
 ok(!$result->sensitive);
@@ -445,7 +444,7 @@ ok(!$result->sensitive);
 is(@warns, 0);
 $result = WEC::SSL::BigInt->new(0) + undef;
 is(@warns, 1);
-like($warns[0], qr/^Use of uninitialized value at /i);
+like($warns[0], qr/^Use of uninitialized value in null operation at /i);
 @warns=();
 is("$result", 0);
 ok(!$result->sensitive);
@@ -455,35 +454,35 @@ $result = WEC::SSL::BigInt->new($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $tmp->sensitive(1);
 $result = WEC::SSL::BigInt->new($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
-$tmp->tainted(1);
+$tmp->taint(1);
 $result = WEC::SSL::BigInt->new($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok($result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
 $tmp->sensitive(0);
 $result = WEC::SSL::BigInt->new($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
 ok(!$result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
-$tmp->tainted(0);
+$tmp->taint(0);
 $result = Big->new($tmp);
 is(ref($result), "Big");
 is("$result", -28);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 is(@warns, 0);
 diag($_) for @warns;

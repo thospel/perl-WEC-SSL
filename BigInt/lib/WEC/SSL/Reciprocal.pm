@@ -8,7 +8,7 @@ our $VERSION = "1.000";
 require WEC::SSL::BigInt;
 
 use Exporter::Tidy
-    other => [qw(sensitive tainted mod_multiply divide quotient remainder)];
+    other => [qw(sensitive taint mod_multiply divide quotient remainder)];
 
 1;
 __END__
@@ -24,8 +24,8 @@ WEC::SSL::Reciprocal - Repeated WEC::SSL::BigInt operations with the same diviso
   # Sensitivity and taintedness
   $sensitive = $recp->sensitive;
   $old_sensitive = $recp->sensitive($new_sensitive);
-  $tainted = $recp->tainted;
-  $old_tainted = $recp->tainted($new_tainted);
+  $taint = $recp->taint;
+  $old_taint = $recp->taint($new_taint);
 
   $rest = $recp->mod_multiply($a, $b);
   $quotient = $recp->divide($a);
@@ -86,9 +86,9 @@ all derived values will also be sensitive and all of them will be zeroed when
 they go out of scope. In particular, a newly created WEC::SSL::Reciprocal
 object will inherit the sensitity of the argument it is the reciprocal of.
 
-=item X<tainted>$tainted = $recp->tainted
+=item X<taint>$taint = $recp->taint
 
-=item $old_tainted = $recp->tainted($new_tainted)
+=item $old_taint = $recp->taint($new_taint)
 
 A WEC::SSL::Reciprocal object is typically passed around as a reference to a
 perl integer which in turn represents the address of a C object. Its the

@@ -312,7 +312,7 @@ ok(!\$tmp->sensitive);
 
 <TAINT_START>
 # Check taint propagation
-\$arg1->tainted(1);
+\$arg1->taint(1);
 \$result = eval { WEC::SSL::BigInt::$name(\$arg1, \$arg2) };
 like(\$@, qr/\\Q$error/i);
 
@@ -325,7 +325,7 @@ ok(tainted(\$tmp));
 <OP=_END>
 <OP_END>
 
-\$arg2->tainted(1);
+\$arg2->taint(1);
 \$result = eval { WEC::SSL::BigInt::$name(\$arg1, \$arg2) };
 like(\$@, qr/\\Q$error/i);
 
@@ -338,7 +338,7 @@ ok(tainted(\$tmp));
 <OP=_END>
 <OP_END>
 
-\$arg1->tainted(0);
+\$arg1->taint(0);
 \$result = eval { WEC::SSL::BigInt::$name(\$arg1, \$arg2) };
 like(\$@, qr/\\Q$error/i);
 
@@ -351,7 +351,7 @@ ok(!tainted(\$tmp));
 <OP=_END>
 <OP_END>
 
-\$arg2->tainted(0);
+\$arg2->taint(0);
 \$result = eval { WEC::SSL::BigInt::$name(\$arg1, \$arg2) };
 like(\$@, qr/\\Q$error/i);
 
@@ -544,7 +544,7 @@ ok(!\$tmp->sensitive);
 
 <TAINT_START>
 # Check taint propagation
-\$arg1->tainted(1);
+\$arg1->taint(1);
 \$result = WEC::SSL::BigInt::$name(\$arg1, \$arg2);
 isa_ok(\$result, "WEC::SSL::BigInt");
 is("\$result", $result);
@@ -558,7 +558,7 @@ ok(tainted(\$tmp));
 <OP=_END>
 <OP_END>
 
-\$arg2->tainted(1);
+\$arg2->taint(1);
 \$result = WEC::SSL::BigInt::$name(\$arg1, \$arg2);
 isa_ok(\$result, "WEC::SSL::BigInt");
 is("\$result", $result);
@@ -572,7 +572,7 @@ ok(tainted(\$tmp));
 <OP=_END>
 <OP_END>
 
-\$arg1->tainted(0);
+\$arg1->taint(0);
 \$result = WEC::SSL::BigInt::$name(\$arg1, \$arg2);
 isa_ok(\$result, "WEC::SSL::BigInt");
 is("\$result", $result);
@@ -586,7 +586,7 @@ ok(tainted(\$tmp));
 <OP=_END>
 <OP_END>
 
-\$arg2->tainted(0);
+\$arg2->taint(0);
 \$result = WEC::SSL::BigInt::$name(\$arg1, \$arg2);
 isa_ok(\$result, "WEC::SSL::BigInt");
 is("\$result", $result);
@@ -728,7 +728,7 @@ ok(!\$arg->sensitive);
 
 <TAINT_START>
 # Check taint propagation
-\$arg->tainted(1);
+\$arg->taint(1);
 \$result = eval { WEC::SSL::BigInt::$name(\$arg) };
 like(\$@, qr/\\Q$error/i);
 
@@ -738,7 +738,7 @@ like(\$@, qr/\\Q$error/i);
 ok(tainted(\$arg));
 <OP_END>
 
-\$arg->tainted(0);
+\$arg->taint(0);
 \$result = eval { WEC::SSL::BigInt::$name(\$arg) };
 like(\$@, qr/\\Q$error/i);
 
@@ -849,7 +849,7 @@ is("\$result", $result);
 
 <TAINT_START>
 # Check taint propagation
-\$arg->tainted(1);
+\$arg->taint(1);
 \$result = WEC::SSL::BigInt::$name(\$arg);
 isa_ok(\$result, "WEC::SSL::BigInt");
 is("\$result", $result);
@@ -860,7 +860,7 @@ ok(tainted(\$result));
 ok(tainted(\$result));
 <OP_END>
 
-\$arg->tainted(0);
+\$arg->taint(0);
 \$result = WEC::SSL::BigInt::$name(\$arg);
 isa_ok(\$result, "WEC::SSL::BigInt");
 is("\$result", $result);

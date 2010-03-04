@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl 91_print_hex.t'
-
+# `make test'. After `make install' it should work as `perl 091_print_hex.t'
 # No taint checking in this test
 
 use strict;

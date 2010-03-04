@@ -13,7 +13,7 @@ t/004_hex.t
 t/005_mpi.t
 t/006_bin.t
 t/007_sensitive.t
-t/008_tainted.t
+t/008_taint.t
 t/009_clear.t
 t/010_add.t
 t/011_subtract.t
@@ -86,7 +86,7 @@ t/092_print_HEX.t
 t/093_bio_print_HEX.t
 t/100_reciprocal_new.t
 t/101_reciprocal_sensitive.t
-t/102_recp_tainted.t
+t/102_recp_taint.t
 t/103_reciprocal_mod_multiply.t
 t/104_reciprocal_divide.t
 t/105_reciprocal_quotient.t

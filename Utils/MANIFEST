@@ -3,7 +3,7 @@ Makefile.PL
 t/00_load.t
 t/01_utils.t
 t/02_error.t
-t/03_tainted.t
+t/03_taint.t
 lib/WEC/SSL/Utils.pm
 lib/WEC/SSL/Errors.pm
 lib/WEC/SSL/Error.pm

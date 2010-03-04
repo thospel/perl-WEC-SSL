@@ -112,7 +112,7 @@ new(char *class, ...)
     if (!cipher) croak("No cipher argument");
     if (!has_key) croak("No key argument");
 
-    New(__LINE__ % 1000, cipher_context, 1, struct wec_cipher_context);
+    Newx(cipher_context, 1, struct wec_cipher_context);
     object = sv_newmortal();
     sv_setref_pv(object, class, (void*) cipher_context);
 
@@ -144,8 +144,7 @@ update(wec_cipher_context cipher_context, SV *sv_string)
     string = SV_BYTES(sv_string, len);
     if (len > INT_MAX - EVP_CIPHER_CTX_block_size(&cipher_context->ctx))
         croak("Input length out of range");
-    RETVAL = NEWSV(__LINE__ % 1000,
-                   len+EVP_CIPHER_CTX_block_size(&cipher_context->ctx));
+    RETVAL = newSV(len+EVP_CIPHER_CTX_block_size(&cipher_context->ctx));
     sv_setpvn(RETVAL, "", 0);
     out = SvPV(RETVAL, dummy_len);
     if (ix) {

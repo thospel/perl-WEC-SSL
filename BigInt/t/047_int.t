@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 047_int.t'
-
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -88,13 +87,13 @@ is("$result", -3);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
@@ -147,13 +146,13 @@ is("$result", -2);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
@@ -206,13 +205,13 @@ is("$result", -1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
@@ -265,13 +264,13 @@ is("$result", 0);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
@@ -324,13 +323,13 @@ is("$result", 1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
@@ -383,13 +382,13 @@ is("$result", 2);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
@@ -442,13 +441,13 @@ is("$result", 3);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 3);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 3);
@@ -501,13 +500,13 @@ is("$result", 9);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 9);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 9);
@@ -560,13 +559,13 @@ is("$result", -9);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -9);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -9);
@@ -619,13 +618,13 @@ is("$result", 12);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 12);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 12);
@@ -678,13 +677,13 @@ is("$result", -12);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -12);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -12);
@@ -737,13 +736,13 @@ is("$result", 581);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 581);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 581);
@@ -796,13 +795,13 @@ is("$result", -581);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -581);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::int($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -581);

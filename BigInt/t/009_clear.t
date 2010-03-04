@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 09_clear.t'
-
+# `make test'. After `make install' it should work as `perl -T 009_clear.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -31,8 +30,8 @@ for (-28, 0, 28) {
     is("$tmp", $_);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
 
     $result->clear;
     is("$result", 0);
@@ -41,8 +40,8 @@ for (-28, 0, 28) {
     isa_ok($tmp, "WEC::SSL::BigInt");
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
 
     $tmp = $result = Big->new($_);
     $result->sensitive(1);
@@ -56,15 +55,15 @@ for (-28, 0, 28) {
     isa_ok($tmp, "Big");
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
 
     $tmp = $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
 
     $result->clear;
     is("$result", 0);
@@ -73,8 +72,8 @@ for (-28, 0, 28) {
     isa_ok($tmp, "Big");
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
 
     eval { WEC::SSL::BigInt::clear($_) };
     like($@, qr/^arg is not a reference at /i);

@@ -12,7 +12,7 @@ require XSLoader;
 XSLoader::load('WEC::SSL::Engine', $VERSION);
 
 use Exporter::Tidy
-    other => [qw(tainted
+    other => [qw(taint
                  FLAGS_MALLOCED FLAGS_MANUAL_CMD_CTRL FLAGS_BY_ID_COPY
                  METHOD_RSA METHOD_DSA METHOD_DH METHOD_RAND METHOD_ECDH
                  METHOD_ECDSA METHOD_CIPHERS METHOD_DIGESTS METHOD_STORE
@@ -36,8 +36,8 @@ WEC::SSL::Engine - OpenSSL external cryptographic engine support
   $flags       = $engine->flags;
   $old_flags   = $engine->flags($new_flags);
 
-  $tainted       = $engine->tainted;
-  $old_tainted   = $engine->tainted($new_tainted);
+  $taint       = $engine->taint;
+  $old_taint   = $engine->taint($new_taint);
 
 =head1 DESCRIPTION
 
@@ -101,9 +101,9 @@ This method is a wrapper for OpenSSL functions
 L<ENGINE_get_flags|ENGINE_get_flags(3)> and
 L<ENGINE_set_flags|ENGINE_set_flags(3)>.
 
-=item X<tainted>$tainted = $engine->tainted
+=item X<taint>$taint = $engine->taint
 
-=item $old_tainted = $engine->tainted($new_tainted);
+=item $old_taint = $engine->taint($new_taint);
 
 A WEC::SSL::Engine object is in reality a reference to thingy with a special
 meaning to the module internals. Its the taintedness of the thingy that

@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 103_reciprocal_mod_multiply.t'
-
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -55,7 +54,7 @@ for (0..7) {
     $m->sensitive(1) if $_ & 4;
     $result = $m->mod_multiply($a, $b);
     ok(!$result->sensitive ^ !!$_);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     is("$result", 2);
 }
 
@@ -66,30 +65,30 @@ for (0..3) {
     $m->sensitive(1) if $_ & 2;
     $result = $m->mod_multiply($a, $a);
     ok(!$result->sensitive ^ !!$_);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     is("$result", 4);
 }
 
 for (0..7) {
     $a = Big->new(4);
-    $a->tainted(1) if $_ & 1;
+    $a->taint(1) if $_ & 1;
     $b = Big->new(8);
-    $b->tainted(1) if $_ & 2;
+    $b->taint(1) if $_ & 2;
     $m = WEC::SSL::Reciprocal->new(10);
-    $m->tainted(1) if $_ & 4;
+    $m->taint(1) if $_ & 4;
     $result = $m->mod_multiply($a, $b);
-    ok(!$result->tainted ^ !!$_);
+    ok(!$result->taint ^ !!$_);
     ok(!$result->sensitive);
     is("$result", 2);
 }
 
 for (0..3) {
     $a = Big->new(8);
-    $a->tainted(1) if $_ & 1;
+    $a->taint(1) if $_ & 1;
     $m = WEC::SSL::Reciprocal->new(10);
-    $m->tainted(1) if $_ & 2;
+    $m->taint(1) if $_ & 2;
     $result = $m->mod_multiply($a, $a);
-    ok(!$result->tainted ^ !!$_);
+    ok(!$result->taint ^ !!$_);
     ok(!$result->sensitive);
     is("$result", 4);
 }

@@ -18,10 +18,11 @@
 #define UTILS_API_VERSION "0.1"
 #define PACKAGE_BASE "WEC::SSL"
 
-#define SENSITIVE 1
+#define DO_MAGIC	1	/* Support magic */
+#define SENSITIVE	1
 
-#define SERVER	1
-#define CLIENT	2
+#define SERVER		1
+#define CLIENT		2
 
 #define DEFAULT_CIPHERS "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
@@ -29,19 +30,6 @@
 #define MAX_VERIFY_DEPTH	65535
 
 #define MORTALCOPY(sv) sv_2mortal(newSVsv(sv))
-
-#define FAKE_PAD() STMT_START {			\
-    pad_op = *PL_op;				\
-    pad_op.op_targ = 1;				\
-    SAVEPPTR(PL_op);				\
-    PL_op = &pad_op;				\
-    SAVECOMPPAD();				\
-    SvANY(&pad_av) = &pad_vav;			\
-    pad_vav.xav_array = (char *) pad_tmp;	\
-    pad_tmp[1] = sv_newmortal();		\
-    PL_comppad = &pad_av;			\
-    PL_curpad = AvARRAY(PL_comppad);		\
-} STMT_END
 
 #define TAINT_RAND (PL_tainted = RAND_status() == 1 ? FALSE : TRUE)
 

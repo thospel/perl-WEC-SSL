@@ -5,7 +5,7 @@ lib/WEC/SSL/EngineList.pm
 MANIFEST
 t/00_load.t
 t/01_by_name.t
-t/02_tainted.t
+t/02_taint.t
 t/03_name.t
 t/04_description.t
 t/05_flags.t

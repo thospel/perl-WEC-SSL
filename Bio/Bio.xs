@@ -34,6 +34,59 @@ static int bio_write(pTHX_ BIO *bio, SV *bufsv) {
     return rc;
 }
 
+/* Roughly based on pp_fileno in perl source pp_sys.c */
+static int get_fileno(pTHX_ SV *value, IO **pio) {
+    IO *io;
+    MAGIC  *mg;
+    PerlIO *fp;
+    int fd;
+    NV nv, diff;
+
+    if (DO_MAGIC) SvGETMAGIC(value);
+    if (!SvOK(value)) croak("Socket is undefined");
+    io = sv_2io(value);
+    if (!io) croak("Socket is not an IO handle");
+    mg = SvTIED_mg((SV*) io, PERL_MAGIC_tiedscalar);
+    if (mg) {
+        I32 count, start;
+
+        dSP;
+        start = (SP) - PL_stack_base;
+        PUSHMARK(SP);
+        XPUSHs(SvTIED_obj((SV*)io, mg));
+        PUTBACK;
+        ENTER;
+        count = call_method("FILENO", G_SCALAR);
+        if (count != 1) croak("Assertion: Forced scalar context call succeeded in returning %d values. This is impossible", (int) count);
+        LEAVE;
+        SPAGAIN;
+        value = POPs;
+        if (start != (SP) - PL_stack_base)
+            croak("Assertion: Stack base changed");
+        PUTBACK;
+        if (DO_MAGIC) SvGETMAGIC(value);
+        if (!SvOK(value)) croak("Socket is undefined");
+        /* There is no SvNV_nomg,
+           so magic values get activated twice */
+        nv = SvNV(value);
+        fd = nv;
+        diff = nv - (NV) fd;
+        if (diff >= 1)
+            croak("Socket '%"SVf"' fileno is larger than %d", 
+                  value, PERL_INT_MAX);
+        if (diff <= -1)
+            croak("Socket '%"SVf"' fileno is smaller than %d",
+                  value, PERL_INT_MIN);
+    } else {
+        fp = IoIFP(io);
+        if (!fp) croak("Socket is not an IO handle");
+        fd = PerlIO_fileno(fp);
+    }
+    if (fd < 0) croak("Socket fileno is negative");
+    *pio = io;
+    return fd;
+}
+
 MODULE = WEC::SSL::Bio		PACKAGE = WEC::SSL::Bio
 PROTOTYPES: ENABLE
 
@@ -47,7 +100,7 @@ get(wec_bio bio, SV *length)
     len = GET_INT(length, "length");
     /* if (bio->chain) croak("Direct I/O on a chained BIO"); */
     if (len < 0) croak("Negative length");
-    RETVAL = NEWSV(__LINE__ % 1000, len);
+    RETVAL = newSV(len);
     sv_setpvn(RETVAL, "", 0);
     buf = SvPV(RETVAL, dummy);
     rc = BIO_read(bio->bio, buf, len);
@@ -71,7 +124,7 @@ gets(wec_bio bio, SV *length)
     /* if (bio->chain) croak("Direct I/O on a chained BIO"); */
     len = GET_INT(length, "length");
     if (len < 0) croak("Negative length");
-    RETVAL = NEWSV(__LINE__ % 1000, len);
+    RETVAL = newSV(len);
     sv_setpvn(RETVAL, "", 0);
     buf = SvPV(RETVAL, dummy);
     rc = BIO_gets(bio->bio, buf, len);
@@ -93,7 +146,7 @@ write(wec_bio bio, SV *bufsv)
     /* if (bio->chain) croak("Direct I/O on a chained BIO"); */
     rc = bio_write(aTHX_ bio->bio, bufsv);
     if (rc < -1) croak("BIO_write not valid for this BIO");
-    RETVAL = rc >= 0 ? newSViv(rc) : NEWSV(__LINE__ % 1000, 0);
+    RETVAL = rc >= 0 ? newSViv(rc) : newSV(0);
   OUTPUT:
     RETVAL
 
@@ -185,7 +238,7 @@ new(char *class, char *filename, char *mode)
     bio_file->chain = NULL;
     bio_file->ssl = NULL;
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_file);
   OUTPUT:
     RETVAL
@@ -198,41 +251,9 @@ new(char *class, SV *socket)
     BIO *bio;
     wec_bio_socket bio_socket;
     int fd;
-    GV *gv;
     IO *io;
-    SV *pad_tmp[2];
-    struct op pad_op;
-    AV pad_av;
-    XPVAV pad_vav;
   CODE:
-    FAKE_PAD();
-    /* Is this the best ? */
-    pad_op.op_flags = 0;
-    /* Allow literal strings like STDOUT, avoid save_gp() */
-    pad_op.op_private = 0;
-
-    XPUSHs(socket);
-    PUTBACK;
-    PL_ppaddr[OP_RV2GV](aTHX);
-    SPAGAIN;
-    gv = (GV *) POPs;
-    if (!gv) croak("Assert: NULL GLOB pointer");
-
-    pad_op.op_private = 1;
-    PUSHs((SV *) gv);
-    PUTBACK;
-    PL_ppaddr[OP_FILENO](aTHX);
-    SPAGAIN;
-    socket = POPs;
-    if (!socket) croak("Assert: NULL FD pointer");
-    if (SvMAGICAL(socket)) socket = MORTALCOPY(socket);
-    if (!SvOK(socket)) croak("Undefined filedescriptor");
-    fd = SvIV(socket);
-
-    if (SvTYPE(gv) != SVt_PVGV) croak("Not a GLOB reference");
-    io = GvIOp(gv);
-    if (!io) croak("No IO reference in GLOB");
-    if (SvTYPE(io) != SVt_PVIO) croak("Not an IO reference");
+    fd = get_fileno(aTHX_ socket, &io);
 
     bio = BIO_new_socket(fd, BIO_NOCLOSE);
     if (!bio) croak("Could not create BIO_socket");
@@ -244,7 +265,7 @@ new(char *class, SV *socket)
     SvREFCNT_inc(io);
     bio_socket->socket = io;
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_socket);
   OUTPUT:
     RETVAL
@@ -272,7 +293,7 @@ new(char *class)
     bio_buffer->chain = NULL;
     bio_buffer->ssl = NULL;
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_buffer);
   OUTPUT:
     RETVAL
@@ -302,7 +323,7 @@ new(char *class, long size=0)
     bio_pair->ssl = NULL;
     bio_pair->peer  = NULL;
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_pair);
   OUTPUT:
     RETVAL
@@ -354,7 +375,7 @@ new(char *class)
     bio_b64->chain = NULL;
     bio_b64->ssl = NULL;
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_b64);
   OUTPUT:
     RETVAL
@@ -375,7 +396,7 @@ new(char *class)
     bio_memory->chain = NULL;
     bio_memory->ssl = NULL;
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_memory);
   OUTPUT:
     RETVAL
@@ -460,7 +481,7 @@ new(char *class, ...)
     bio_cipher->ssl = NULL;
     BIO_set_cipher(bio_cipher->bio, cipher, key, has_iv ? iv : NULL, ix);
 
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_cipher);
   OUTPUT:
     RETVAL
@@ -482,7 +503,7 @@ new(char *class)
     bio_chain->nr_allocated = 0;
     bio_chain->bio = NULL;
     bio_chain->ssl = NULL;
-    RETVAL = NEWSV(__LINE__ % 1000, 0);
+    RETVAL = newSV(0);
     sv_setref_pv(RETVAL, class, (void*)bio_chain);
   OUTPUT:
     RETVAL
@@ -526,7 +547,7 @@ push(wec_bio_chain bio_chain, ...)
         bio_chain->nr_allocated = nr_allocated;
     }
 
-    New(__LINE__ %1000, bios, items, wec_bio);
+    Newx(bios, items, wec_bio);
     SAVEFREEPV(bios);
     for (i=0; i<items; i++) {
         bio_sv = ST(i+1);
@@ -582,7 +603,7 @@ write(wec_bio_chain bio_chain, SV *bufsv)
     bio = INT2PTR(wec_bio, tmp);
     rc = bio_write(aTHX_ bio->bio, bufsv);
     if (rc < -1) croak("BIO_write not valid for this chain");
-    RETVAL = rc >= 0 ? newSViv(rc) : NEWSV(__LINE__ % 1000, 0);
+    RETVAL = rc >= 0 ? newSViv(rc) : newSV(0);
   OUTPUT:
     RETVAL
 

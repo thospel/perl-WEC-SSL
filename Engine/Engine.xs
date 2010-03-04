@@ -4,7 +4,7 @@
 INIT_UTILS
 
 #define NEW_CLASS(eng, fl, object, class) STMT_START {	\
-    New(__LINE__ % 1000, engine, 1, struct wec_engine);	\
+    Newx(engine, 1, struct wec_engine);	\
     engine->e = eng;					\
     engine->flags = fl;					\
     (object) = sv_newmortal();				\
@@ -383,7 +383,7 @@ control_command_name_from_id(SV *engine, SV *id)
     eng = C_OBJECT(engine, PACKAGE_BASE "::Engine", "engine");
     length = ENGINE_ctrl(eng->e, ENGINE_CTRL_GET_NAME_LEN_FROM_CMD, cmd, 0, 0);
     if (length <= 0) CRYPTO_CROAK("ENGINE_ctrl error GET_NAME_LEN_FROM_CMD");
-    object = NEWSV(__LINE__ % 1000, length);
+    object = newSV(length);
     sv_2mortal(object);
     PUSHs(object);
     sv_setpvn(object, "", 0);
@@ -427,7 +427,7 @@ control_command_description_from_id(SV *engine, SV *id)
     eng = C_OBJECT(engine, PACKAGE_BASE "::Engine", "engine");
     length = ENGINE_ctrl(eng->e, ENGINE_CTRL_GET_DESC_LEN_FROM_CMD, cmd, 0, 0);
     if (length <= 0) CRYPTO_CROAK("ENGINE_ctrl error GET_DESC_LEN_FROM_CMD");
-    object = NEWSV(__LINE__ % 1000, length);
+    object = newSV(length);
     sv_2mortal(object);
     PUSHs(object);
     sv_setpvn(object, "", 0);
@@ -473,9 +473,9 @@ try_control_command(SV *engine, SV *sv_name, SV *sv_value)
     if (!rc) CRYPTO_CROAK("Could not execute supported control command '%s'", name);
 
 void
-tainted(SV *arg, SV *tainted=NULL)
+taint(SV *arg, SV *taint=NULL)
   PPCODE:
-    REF_TAINTED(arg, tainted, PACKAGE_BASE "::Engine", "arg");
+    REF_TAINTED(arg, taint, PACKAGE_BASE "::Engine", "arg");
 
 int
 _structure_refcount(SV *engine)

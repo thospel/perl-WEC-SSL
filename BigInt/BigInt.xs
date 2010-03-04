@@ -330,7 +330,7 @@ static wec_bigint sv_bigint(pTHX_ SV **sv,
 
     if (!SvOK(value)) {
         if (ckWARN(WARN_UNINITIALIZED))
-            Perl_warner(aTHX_ packWARN(WARN_UNINITIALIZED), PL_warn_uninit, "", "");
+            Perl_report_uninit(aTHX_ value);
         if (!BN_zero(big)) CRYPTO_CROAK("BN_zero error");
         goto done;
     }
@@ -455,7 +455,7 @@ static void sv_typed_int(pTHX_ typed_int *typed, SV *value,
     if (!SvOK(value)) {
         if (ckWARN(WARN_UNINITIALIZED))
             /* Perl_warner(aTHX_ packWARN(WARN_UNINITIALIZED), PL_warn_uninit, " in ", OP_NAME(PL_op)); */
-            Perl_warner(aTHX_ packWARN(WARN_UNINITIALIZED), PL_warn_uninit, "", "");
+            Perl_report_uninit(aTHX_ value);
         typed->ival   = 0;
         typed->flags  = HAS_POSITIVE_INT;
         typed->bigint = (wec_bigint) &ZERO;
@@ -1072,7 +1072,7 @@ abs_to_bin(SV *arg)
     if (ix == 1 && BN_is_negative(&bigint->num))
         croak("No bin representation for negative numbers");
     len = ix == 2 ? BN_bn2mpi(&bigint->num, NULL) : BN_num_bytes(&bigint->num);
-    RETVAL = NEWSV(__LINE__ % 1000, len);
+    RETVAL = newSV(len);
     sv_setpvn(RETVAL, "", 0);
     string = SvPV(RETVAL, dummy_len);
 
@@ -1697,9 +1697,9 @@ sensitive(SV *arg, SV *sensitive=NULL)
     if (sensitive) bigint->sensitive = GET_SENSITIVE(sensitive);
 
 void
-tainted(SV *arg, SV *tainted=NULL)
+taint(SV *arg, SV *taint=NULL)
   PPCODE:
-    REF_TAINTED(arg, tainted, PACKAGE_BASE "::BigInt", "arg");
+    REF_TAINTED(arg, taint, PACKAGE_BASE "::BigInt", "arg");
 
 void
 copy(SV *arg, SV *dummy=NULL, SV *how=NULL)
@@ -2910,9 +2910,9 @@ sensitive(SV *arg, SV *sensitive=NULL)
     if (sensitive) reciprocal->sensitive = GET_SENSITIVE(sensitive);
 
 void
-tainted(SV *arg, SV *tainted=NULL)
+taint(SV *arg, SV *taint=NULL)
   PPCODE:
-    REF_TAINTED(arg, tainted, PACKAGE_BASE "::Reciprocal", "arg");
+    REF_TAINTED(arg, taint, PACKAGE_BASE "::Reciprocal", "arg");
 
 void
 mod_multiply(SV *arg0, SV *arg1, SV *arg2)
@@ -3057,9 +3057,9 @@ sensitive(SV *arg, SV *sensitive=NULL)
     if (sensitive) montgomery->sensitive = GET_SENSITIVE(sensitive);
 
 void
-tainted(SV *arg, SV *tainted=NULL)
+taint(SV *arg, SV *taint=NULL)
   PPCODE:
-    REF_TAINTED(arg, tainted, PACKAGE_BASE "::Montgomery", "arg");
+    REF_TAINTED(arg, taint, PACKAGE_BASE "::Montgomery", "arg");
 
 void
 mod_multiply(SV *arg0, SV *arg1, SV *arg2)

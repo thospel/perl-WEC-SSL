@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 81_rand_prime.t'
-
+# `make test'. After `make install' it should work as `perl -T 081_rand_prime.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -37,7 +36,7 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 $val = Big->rand_prime(bits => 256);
 isa_ok($val, "Big");
@@ -138,7 +137,7 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok($val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 eval { Big->rand_prime(bit_length => 256, sensitive => $len-$len) };
 like($@, qr/^Turning sensitivity off using a sensitive value at /i);
@@ -148,21 +147,21 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 $val = Big->rand_prime(bit_length => 256, modulus => $len);
 isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok($val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 $val = Big->rand_prime(bit_length => 256, modulus => 257, remainder => $len);
 isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok($val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 $val = Big->rand_prime(bit_length => 256,
                        callback_period => $len,
@@ -171,7 +170,7 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 # Taint propagation
 $val = Big->rand_prime(bit_length => 256 . $taint);
@@ -179,21 +178,21 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok($val->tainted);
+ok($val->taint);
 
 $val = Big->rand_prime(bit_length => 256, sensitive => $taint);
 isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok($val->tainted);
+ok($val->taint);
 
 $val = Big->rand_prime(bit_length => 256, modulus => 256 . $taint);
 isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok($val->tainted);
+ok($val->taint);
 
 $val = Big->rand_prime(bit_length => 256,
                        modulus => 256,
@@ -202,7 +201,7 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok($val->tainted);
+ok($val->taint);
 
 $val = Big->rand_prime(bit_length => 256,
                        callback_period => 1 . $taint,
@@ -211,7 +210,7 @@ isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
 ok(!$val->sensitive);
-ok(!$val->tainted);
+ok(!$val->taint);
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

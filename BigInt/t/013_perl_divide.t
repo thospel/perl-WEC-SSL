@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 013_perl_divide.t'
-
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -88,25 +87,25 @@ is("$result", 1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
@@ -202,7 +201,7 @@ is("$r", 0);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -211,7 +210,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -220,7 +219,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -229,7 +228,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -281,19 +280,19 @@ $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
@@ -339,19 +338,19 @@ $arg2->sensitive(0);
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
@@ -420,25 +419,25 @@ is("$result", -1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
@@ -534,7 +533,7 @@ is("$r", 0);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -543,7 +542,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -552,7 +551,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -561,7 +560,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -635,25 +634,25 @@ is("$result", 0);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
@@ -749,7 +748,7 @@ is("$r", 0);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -758,7 +757,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -767,7 +766,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -776,7 +775,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -828,19 +827,19 @@ $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
@@ -886,19 +885,19 @@ $arg2->sensitive(0);
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
@@ -967,25 +966,25 @@ is("$result", 0);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
@@ -1081,7 +1080,7 @@ is("$r", 0);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1090,7 +1089,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1099,7 +1098,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1108,7 +1107,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1182,25 +1181,25 @@ is("$result", -1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
@@ -1296,7 +1295,7 @@ is("$r", 0);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1305,7 +1304,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1314,7 +1313,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1323,7 +1322,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1375,19 +1374,19 @@ $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
@@ -1433,19 +1432,19 @@ $arg2->sensitive(0);
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = eval { WEC::SSL::BigInt::perl_divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
@@ -1514,25 +1513,25 @@ is("$result", 1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
@@ -1628,7 +1627,7 @@ is("$r", 0);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1637,7 +1636,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1646,7 +1645,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1655,7 +1654,7 @@ is("$r", 0);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1729,25 +1728,25 @@ is("$result", 1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
@@ -1843,7 +1842,7 @@ is("$r", 3);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1852,7 +1851,7 @@ is("$r", 3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1861,7 +1860,7 @@ is("$r", 3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1870,7 +1869,7 @@ is("$r", 3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -1944,25 +1943,25 @@ is("$result", -1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
@@ -2058,7 +2057,7 @@ is("$r", -3);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2067,7 +2066,7 @@ is("$r", -3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2076,7 +2075,7 @@ is("$r", -3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2085,7 +2084,7 @@ is("$r", -3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2159,25 +2158,25 @@ is("$result", -1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
@@ -2273,7 +2272,7 @@ is("$r", 3);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2282,7 +2281,7 @@ is("$r", 3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2291,7 +2290,7 @@ is("$r", 3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2300,7 +2299,7 @@ is("$r", 3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2374,25 +2373,25 @@ is("$result", 1);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
@@ -2488,7 +2487,7 @@ is("$r", -3);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2497,7 +2496,7 @@ is("$r", -3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2506,7 +2505,7 @@ is("$r", -3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2515,7 +2514,7 @@ is("$r", -3);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2589,25 +2588,25 @@ is("$result", 193);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
@@ -2703,7 +2702,7 @@ is("$r", 2);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2712,7 +2711,7 @@ is("$r", 2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2721,7 +2720,7 @@ is("$r", 2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2730,7 +2729,7 @@ is("$r", 2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2804,25 +2803,25 @@ is("$result", -193);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
@@ -2918,7 +2917,7 @@ is("$r", 2);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2927,7 +2926,7 @@ is("$r", 2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2936,7 +2935,7 @@ is("$r", 2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -2945,7 +2944,7 @@ is("$r", 2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3019,25 +3018,25 @@ is("$result", -193);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -193);
@@ -3133,7 +3132,7 @@ is("$r", -2);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3142,7 +3141,7 @@ is("$r", -2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3151,7 +3150,7 @@ is("$r", -2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3160,7 +3159,7 @@ is("$r", -2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3234,25 +3233,25 @@ is("$result", 193);
 ok(!$result->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
 ok(tainted($result));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
 ok(tainted($result));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
 ok(tainted($result));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 $result = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 193);
@@ -3348,7 +3347,7 @@ is("$r", -2);
 ok(!$q->sensitive);
 
 # Check taint propagation
-$arg1->tainted(1);
+$arg1->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3357,7 +3356,7 @@ is("$r", -2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(1);
+$arg2->taint(1);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3366,7 +3365,7 @@ is("$r", -2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg1->tainted(0);
+$arg1->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");
@@ -3375,7 +3374,7 @@ is("$r", -2);
 ok(tainted($q));
 ok(tainted($r));
 
-$arg2->tainted(0);
+$arg2->taint(0);
 ($q, $r) = WEC::SSL::BigInt::perl_divide($arg1, $arg2);
 isa_ok($q, "WEC::SSL::BigInt");
 is(ref($r), "");

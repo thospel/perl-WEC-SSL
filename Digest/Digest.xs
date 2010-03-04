@@ -42,7 +42,7 @@ new(char *class, ...)
     }
     if (!digest) croak("No digest argument");
 
-    New(__LINE__ % 1000, digest_context, 1, struct wec_digest_context);
+    Newx(digest_context, 1, struct wec_digest_context);
     object = sv_newmortal();
     sv_setref_pv(object, class, (void*) digest_context);
 
@@ -158,7 +158,7 @@ new(char *class, ...)
     key = SV_BYTES(sv_key, key_len);
     if (key_len > INT_MAX) croak("key length out of range");
 
-    New(__LINE__ % 1000, hmac_context, 1, struct wec_hmac);
+    Newx(hmac_context, 1, struct wec_hmac);
     object = sv_newmortal();
     sv_setref_pv(object, class, (void*) hmac_context);
 

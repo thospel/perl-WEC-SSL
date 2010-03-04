@@ -31,7 +31,7 @@ use Exporter::Tidy
                  to_decimal to_integer abs_to_integer to_hex to_HEX
                  to_mpi to_bin abs_to_bin
                  rand pseudo_rand rand_prime rand_bits pseudo_rand_bits
-                 clear sensitive tainted)];
+                 clear sensitive taint)];
 
 sub to_filehandle {
     my ($fh) = @_;
@@ -292,8 +292,8 @@ WEC::SSL::BigInt - OpenSSL multi-precision integer arithmetic
  # Sensitivity and tainting
  $sensitive     = $arg->sensitive;
  $old_sensitive = $arg->sensitive($new_sensitive);
- $tainted       = $arg->tainted;
- $old_tainted   = $arg->tainted($new_tainted);
+ $taint         = $arg->taint;
+ $old_taint     = $arg->taint($new_tainted);
  $arg->clear;
 
  # Primes
@@ -1553,9 +1553,9 @@ default where values are considered sensitive if they come from an external
 source. It's up to the programmer to set the sensitivity flag when sensitive
 data enters the system.
 
-=item X<tainted>$tainted = $arg->tainted
+=item X<taint>$taint = $arg->taint
 
-=item $old_tainted = $arg->tainted($new_tainted)
+=item $old_taint = $arg->taint($new_taint)
 
 A WEC::SSL::BigInt object is typically passed around as a reference to a perl
 integer which in turn represents the address of a C object. Its the taintedness

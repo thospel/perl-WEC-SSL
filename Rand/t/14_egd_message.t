@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl 4_egd_message.t'
-
+# `make test'. After `make install' it should work as `perl 14_egd_message.t'
 use FindBin qw($Bin);
 
 my $egd_file = "$Bin/egd";

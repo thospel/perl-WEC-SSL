@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 048_sign.t'
-
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -81,13 +80,13 @@ is(ref($result), "");
 is($result, -1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
@@ -133,13 +132,13 @@ is(ref($result), "");
 is($result, -1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
@@ -185,13 +184,13 @@ is(ref($result), "");
 is($result, -1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
@@ -237,13 +236,13 @@ is(ref($result), "");
 is($result, 0);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 0);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 0);
@@ -289,13 +288,13 @@ is(ref($result), "");
 is($result, 1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
@@ -341,13 +340,13 @@ is(ref($result), "");
 is($result, 1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
@@ -393,13 +392,13 @@ is(ref($result), "");
 is($result, 1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
@@ -445,13 +444,13 @@ is(ref($result), "");
 is($result, 1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
@@ -497,13 +496,13 @@ is(ref($result), "");
 is($result, -1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
@@ -549,13 +548,13 @@ is(ref($result), "");
 is($result, 1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
@@ -601,13 +600,13 @@ is(ref($result), "");
 is($result, -1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
@@ -653,13 +652,13 @@ is(ref($result), "");
 is($result, 1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, 1);
@@ -705,13 +704,13 @@ is(ref($result), "");
 is($result, -1);
 
 # Check taint propagation
-$arg->tainted(1);
+$arg->taint(1);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);
 ok(tainted($result));
 
-$arg->tainted(0);
+$arg->taint(0);
 $result = WEC::SSL::BigInt::sign($arg);
 is(ref($result), "");
 is($result, -1);

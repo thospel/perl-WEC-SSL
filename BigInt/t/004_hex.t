@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 04_hex.t'
-
+# `make test'. After `make install' it should work as `perl -T 004_hex.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);

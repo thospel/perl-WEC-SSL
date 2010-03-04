@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 70_mod_add.t'
-
+# `make test'. After `make install' it should work as `perl -T 070_mod_add.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -54,7 +53,7 @@ for (0..7) {
     $m->sensitive(1) if $_ & 4;
     $result = $a->mod_add($b, $m);
     ok(!$result->sensitive ^ !!$_);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     is("$result", 2);
 }
 
@@ -65,30 +64,30 @@ for (0..3) {
     $m->sensitive(1) if $_ & 2;
     $result = $a->mod_add($a, $m);
     ok(!$result->sensitive ^ !!$_);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     is("$result", 6);
 }
 
 for (0..7) {
     $a = Big->new(4);
-    $a->tainted(1) if $_ & 1;
+    $a->taint(1) if $_ & 1;
     $b = Big->new(8);
-    $b->tainted(1) if $_ & 2;
+    $b->taint(1) if $_ & 2;
     $m = Big->new(10);
-    $m->tainted(1) if $_ & 4;
+    $m->taint(1) if $_ & 4;
     $result = $a->mod_add($b, $m);
-    ok(!$result->tainted ^ !!$_);
+    ok(!$result->taint ^ !!$_);
     ok(!$result->sensitive);
     is("$result", 2);
 }
 
 for (0..3) {
     $a = Big->new(8);
-    $a->tainted(1) if $_ & 1;
+    $a->taint(1) if $_ & 1;
     $m = Big->new(10);
-    $m->tainted(1) if $_ & 2;
+    $m->taint(1) if $_ & 2;
     $result = $a->mod_add($a, $m);
-    ok(!$result->tainted ^ !!$_);
+    ok(!$result->taint ^ !!$_);
     ok(!$result->sensitive);
     is("$result", 6);
 }

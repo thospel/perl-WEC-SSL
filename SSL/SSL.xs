@@ -38,7 +38,7 @@ static int ssl_write(pTHX_ SSL *ssl, SV *bufsv) {
                 /* We have real UTF8 */
                 U32 utf8_flags  = ckWARN(WARN_UTF8) ? 0 : UTF8_ALLOW_ANY;
                 temp_len = from - string;
-                New(__LINE__ % 1000, temp, len, U8);
+                Newx(temp, len, U8);
                 Copy(string, temp, temp_len, U8);
                 to = temp+temp_len;
                 for (; from < str_end; from += temp_len) {
@@ -116,7 +116,7 @@ static int verify_callback(int ok, X509_STORE_CTX *store) {
         if (!tmp) croak("SSL object context is not really a " PACKAGE_BASE "::Context object");
         ssl_context = INT2PTR(wec_ssl_context, tmp);
 
-        New(__LINE__ % 1000, x509, 1, struct wec_x509);
+        Newx(x509, 1, struct wec_x509);
         x509->x509 = NULL;
         sv_x509 = sv_newmortal();
         sv_setref_pv(sv_x509, PACKAGE_BASE "::X509", (void*) x509);
@@ -160,7 +160,7 @@ static SV *ssl_options(pTHX_ SV *sv_ssl_context,
     if (!tmp) croak("ssl_context is not really a " PACKAGE_BASE "::Context object");
     ssl_context = INT2PTR(wec_ssl_context, tmp);
 
-    New(__LINE__ % 1000, ssl, 1, struct wec_ssl);
+    Newx(ssl, 1, struct wec_ssl);
     ssl->context = sv_ssl_context; SvREFCNT_inc(sv_ssl_context);
     ssl->ssl = NULL;
     ssl->mode = 0;
@@ -325,7 +325,7 @@ get(wec_ssl ssl, int len)
     int rc;
   CODE:
     if (len < 0) croak("Negative length");
-    RETVAL = NEWSV(__LINE__ % 1000, len);
+    RETVAL = newSV(len);
     sv_setpvn(RETVAL, "", 0);
     buf = SvPV(RETVAL, dummy);
     rc = SSL_read(ssl->ssl, buf, len);
@@ -346,7 +346,7 @@ write(wec_ssl ssl, SV *bufsv)
     /* if (bio->chain) croak("Direct I/O on a chained BIO"); */
     rc = ssl_write(aTHX_ ssl->ssl, bufsv);
     if (rc <= 0) ssl_croak(ssl, "write", rc);
-    RETVAL = rc >= 0 ? newSViv(rc) : NEWSV(__LINE__ % 1000, 0);
+    RETVAL = rc >= 0 ? newSViv(rc) : newSV(0);
   OUTPUT:
     RETVAL
 
@@ -375,7 +375,7 @@ new(char *class, ...)
   PPCODE:
     if (items % 2  == 0) croak("Odd number of arguments");
 
-    New(__LINE__ % 1000, ssl_context, 1, struct wec_ssl_context);
+    Newx(ssl_context, 1, struct wec_ssl_context);
     ssl_context->ctx = NULL;
     ssl_context->error_cert = NULL;
     object = sv_newmortal();

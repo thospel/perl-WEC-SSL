@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 105_reciprocal_divide.t'
-
+# `make test'. After `make install' it should work as `perl -T 104_reciprocal_divide.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -55,33 +54,33 @@ for (0..3) {
     $m->sensitive(1) if $_ & 2;
     $result = $m->divide($a);
     ok(!$result->sensitive ^ !!$_);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     is("$result", 2);
 
     my ($q, $r) = $m->divide($a);
     ok(!$q->sensitive ^ !!$_);
     ok(!$r->sensitive ^ !!$_);
-    ok(!$q->tainted);
-    ok(!$r->tainted);
+    ok(!$q->taint);
+    ok(!$r->taint);
     is("$q", 2);
     is("$r", 3);
 }
 
 for (0..3) {
     $a = Big->new(17);
-    $a->tainted(1) if $_ & 1;
+    $a->taint(1) if $_ & 1;
     $m = WEC::SSL::Reciprocal->new(7);
-    $m->tainted(1) if $_ & 2;
+    $m->taint(1) if $_ & 2;
     $result = $m->divide($a);
-    ok(!$result->tainted ^ !!$_);
+    ok(!$result->taint ^ !!$_);
     ok(!$result->sensitive);
     is("$result", 2);
 
     my ($q, $r) = $m->divide($a);
     ok(!$q->sensitive);
     ok(!$r->sensitive);
-    ok(!$q->tainted ^ !!$_);
-    ok(!$r->tainted ^ !!$_);
+    ok(!$q->taint ^ !!$_);
+    ok(!$r->taint ^ !!$_);
     is("$q", 2);
     is("$r", 3);
 }

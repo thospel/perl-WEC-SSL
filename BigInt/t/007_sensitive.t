@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 07_sensitive.t'
-
+# `make test'. After `make install' it should work as `perl -T 007_sensitive.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -53,7 +52,7 @@ like($@, qr/^Turning sensitivity off using a sensitive value at /i);
 ok($result->sensitive);
 
 is("$result", -28);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

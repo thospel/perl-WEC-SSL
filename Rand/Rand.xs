@@ -151,7 +151,7 @@ bytes(SV *length)
     TAINT_NOT;
     len = GET_INT(length, "length");
     if (len < 0) croak("length %d is negative", len);
-    RETVAL = NEWSV(__LINE__ % 1000, len);
+    RETVAL = newSV(len);
     sv_setpvn(RETVAL, "", 0);
     if (len) {
         if (!RAND_status()) SvTAINTED_on(RETVAL);
@@ -196,11 +196,11 @@ string(SV *range, SV *length=NULL)
     str_end = str + str_len;
     utf8 = SvUTF8(range) ? TRUE : FALSE;
 
-    New(__LINE__ % 1000, from, str_len, UV);
+    Newx(from, str_len, UV);
     f = from;
     SAVEFREEPV(f);
 
-    New(__LINE__ % 1000, accu, str_len, NV);
+    Newx(accu, str_len, NV);
     a = accu;
     SAVEFREEPV(a);
 
@@ -235,7 +235,7 @@ string(SV *range, SV *length=NULL)
         if (raw_len / rc != len) croak("length out of range");
     } else raw_len = len;
 
-    result = NEWSV(__LINE__ % 1000, raw_len);
+    result = newSV(raw_len);
     sv_2mortal(result);
     PUSHs(result);
     sv_setpvn(result, "", 0);
@@ -407,7 +407,7 @@ try_fetch_from_egd(SV *path, SV *nr_bytes=NULL)
         bytes = GET_INT(nr_bytes, "nr_bytes");
         if (bytes < 0) croak("nr_bytes %d is negative", bytes);
     } else bytes = 255;
-    RETVAL= NEWSV(__LINE__ % 1000, bytes);
+    RETVAL= newSV(bytes);
     sv_setpvn(RETVAL, "", 0);
     buf = SvPV(RETVAL, dummy_len);
     rc = RAND_query_egd_bytes(filename, buf, bytes);

@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 01_by_name.t'
-
 use strict;
 use warnings;
 BEGIN { $^W = 1 };
@@ -22,22 +21,22 @@ my $engine;
 
 $engine = WEC::SSL::Engine->by_name("dynamic");
 isa_ok($engine, "WEC::SSL::Engine", "Check basic creation call");
-is($engine->tainted ? 1 : 0, 0);
+is($engine->taint ? 1 : 0, 0);
 is(tainted($engine) ? 1 : 0, 0);
 
 $engine = Big->by_name("dynamic");
 isa_ok($engine, "Big", "Check basic inheretance on creation");
-is($engine->tainted ? 1 : 0, 0);
+is($engine->taint ? 1 : 0, 0);
 is(tainted($engine) ? 1 : 0, 0);
 
 $engine = eval { WEC::SSL::Engine->by_name("vcjkhsgkajnghnadjgankdnba") };
 like($@, qr/no such engine \(id=vcjkhsgkajnghnadjgankdnba\) at /i, "Check basic failure");
 
 $engine = WEC::SSL::Engine->by_name("dynamic" . $taint);
-is($engine->tainted ? 1 : 0, 1);
+is($engine->taint ? 1 : 0, 1);
 is(tainted($engine) ? 1 : 0, 1);
 
 my $class = "WEC::SSL::Engine" . $taint;
 $engine = $class->by_name("dynamic");
-is($engine->tainted ? 1 : 0, 1);
+is($engine->taint ? 1 : 0, 1);
 is(tainted($engine) ? 1 : 0, 1);

@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 43_dec.t'
-
+# `make test'. After `make install' it should work as `perl -T 043_dec.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -34,8 +33,8 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "Big");
 
@@ -46,33 +45,33 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $tmp = $result--;
     is("$tmp", $_);
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $result->sensitive(1);
     $tmp = $result--;
     is("$tmp", $_);
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "Big");
 
@@ -83,8 +82,8 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
@@ -95,33 +94,33 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $tmp = --$result;
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $result->sensitive(1);
     $tmp = --$result;
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
@@ -132,8 +131,8 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
@@ -144,33 +143,33 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $tmp = $result->dec_mutate;
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $result->sensitive(1);
     $tmp = $result->dec_mutate;
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
@@ -180,9 +179,9 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     ok(!$tmp->sensitive);
-    ok(!$tmp->tainted);
+    ok(!$tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -191,9 +190,9 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
-    ok($result->tainted);
+    ok($result->taint);
     ok(!$tmp->sensitive);
-    ok($tmp->tainted);
+    ok($tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -204,8 +203,8 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -216,33 +215,33 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "WEC::SSL::BigInt");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $tmp = $result->dec;
     is("$tmp", $_-1);
     is("$result", $_);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "WEC::SSL::BigInt");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $result->sensitive(1);
     $tmp = $result->dec;
     is("$tmp", $_-1);
     is("$result", $_);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -252,7 +251,7 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$tmp", $_-1);
     is($result, $_);
     ok(!$tmp->sensitive);
-    ok(!$tmp->tainted);
+    ok(!$tmp->taint);
     is(ref($result), "");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -261,7 +260,7 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$tmp", $_-1);
     is($result, $_);
     ok(!$tmp->sensitive);
-    ok($tmp->tainted);
+    ok($tmp->taint);
     is(ref($result), "");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -272,8 +271,8 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
@@ -284,33 +283,33 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok(!$result->tainted);
-    ok(!$tmp->tainted);
+    ok(!$result->taint);
+    ok(!$tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $tmp = $result->dec(undef, undef);
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
     ok(!$tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
     $result = Big->new($_);
-    $result->tainted(1);
+    $result->taint(1);
     $result->sensitive(1);
     $tmp = $result->dec(undef, undef);
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok($result->sensitive);
     ok($tmp->sensitive);
-    ok($result->tainted);
-    ok($tmp->tainted);
+    ok($result->taint);
+    ok($tmp->taint);
     is(ref($result), "Big");
     is(ref($tmp), "Big");
 
@@ -320,9 +319,9 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     ok(!$tmp->sensitive);
-    ok(!$tmp->tainted);
+    ok(!$tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "WEC::SSL::BigInt");
 
@@ -331,9 +330,9 @@ for (-28, -2, -1, 0, 1, 2, 28) {
     is("$tmp", $_-1);
     is("$result", $_-1);
     ok(!$result->sensitive);
-    ok($result->tainted);
+    ok($result->taint);
     ok(!$tmp->sensitive);
-    ok($tmp->tainted);
+    ok($tmp->taint);
     is(ref($result), "WEC::SSL::BigInt");
     is(ref($tmp), "WEC::SSL::BigInt");
 }
@@ -346,8 +345,8 @@ is("$copy", 28);
 is("$result", 27);
 ok(!$result->sensitive);
 ok(!$tmp->sensitive);
-ok(!$result->tainted);
-ok(!$tmp->tainted);
+ok(!$result->taint);
+ok(!$tmp->taint);
 is(ref($result), "WEC::SSL::BigInt");
 is(ref($tmp), "Big");
 is(ref($copy), "Big");
@@ -359,8 +358,8 @@ is("$copy", 28);
 is("$result", 27);
 ok(!$result->sensitive);
 ok(!$tmp->sensitive);
-ok(!$result->tainted);
-ok(!$tmp->tainted);
+ok(!$result->taint);
+ok(!$tmp->taint);
 is(ref($result), "WEC::SSL::BigInt");
 is(ref($tmp), "WEC::SSL::BigInt");
 is(ref($copy), "Big");

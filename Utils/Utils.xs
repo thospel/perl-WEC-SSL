@@ -28,7 +28,7 @@ static const U8 *sv_bytes(pTHX_ SV *sv, STRLEN *l) {
                 UV ch;
                 STRLEN temp_len;
 
-                New(__LINE__ % 1000, temp, len+1, U8);
+                Newx(temp, len+1, U8);
                 temp_len = from - string;
                 Copy(string, temp, temp_len, U8);
                 to = temp + temp_len;
@@ -87,7 +87,7 @@ static const U8 *sv_canonical(pTHX_ SV *sv, STRLEN *l) {
     }
 
     /* String has no real reason to be UTF8. Convert */
-    New(__LINE__ % 1000, temp, converted_len+1, U8);
+    Newx(temp, converted_len+1, U8);
     to = temp;
     for (from = string; from < str_end; from += temp_len) {
         ch = utf8n_to_uvchr((U8 *) from, str_end-from, &temp_len,
@@ -128,7 +128,7 @@ static const char *sv_file(pTHX_ SV *sv) {
             if (!UNI_IS_INVARIANT(*from)) {
                 /* We have real UTF8 */
                 utf8_flags = ckWARN(WARN_UTF8) ? 0 : UTF8_ALLOW_ANY;
-                New(__LINE__ % 1000, temp, len+1, U8);
+                Newx(temp, len+1, U8);
                 temp_len = from - string;
                 Copy(string, temp, temp_len, U8);
                 to = temp+temp_len;
@@ -527,20 +527,29 @@ static void error_string(pTHX_ SV *result, SV *error) {
         if (!SvOK(error)) croak("error is undefined");
         croak("error is not of type " PACKAGE_BASE "::Error");
     }
+
     if (!SvROK(error)) croak("error is not a reference");
     err_hv = (HV *) SvRV(error);
     if (SvTYPE(err_hv) != SVt_PVHV) croak("error is not a HASH reference");
     e_ptr = hv_fetch(err_hv, "reason", 6, 0);
     if (!e_ptr) croak("No error entry");
+
     d_ptr = hv_fetch(err_hv, "data", 4, 0);
     if (!d_ptr) sv_catsv(result, *e_ptr);
     else sv_catpvf(result, "%"SVf" (%"SVf")", *e_ptr, *d_ptr);
 
     c_ptr = hv_fetch(err_hv, "code", 4, 0);
-    if (!e_ptr) croak("No code entry");
-    code = SvUV(*c_ptr);
-    sv_setuv(result, code);
-    SvPOK_on(result);
+    if (!c_ptr) croak("No code entry");
+
+    SvUPGRADE(result,SVt_PVNV);
+    if (SvUOK(*c_ptr)) {
+	SvUV_set(result, SvUV(*c_ptr));
+	SvIOK_on(result);
+	SvIsUV_on(result);
+    } else {
+	SvIV_set(result, SvIV(*c_ptr));
+	SvIOK_on(result);
+    }
 }
 
 /* Duplicate from perl source (since it's not exported unfortunately) */
@@ -697,6 +706,10 @@ static void *c_sv(pTHX_ SV *object, const char *class, const char *context) {
     SV *sv;
     HV *stash, *class_stash;
 
+    if (!SvOK(object)) {
+        if (!context) return NULL;
+        croak("%s is tondefined", context);
+    }
     if (!SvROK(object)) {
         if (!context) return NULL;
         if (SvOK(object)) croak("%s is not a reference", context);
@@ -756,7 +769,7 @@ static int get_int(pTHX_ SV *value, bool *sensitive, const char *context) {
 
     if (!SvOK(value)) {
         if (ckWARN(WARN_UNINITIALIZED))
-            Perl_warner(aTHX_ packWARN(WARN_UNINITIALIZED), PL_warn_uninit, "", "");
+            Perl_report_uninit(aTHX_ value);
         return 0;
     }
 
@@ -811,7 +824,7 @@ static long get_long(pTHX_ SV *value, const char *context) {
 
     if (!SvOK(value)) {
         if (ckWARN(WARN_UNINITIALIZED))
-            Perl_warner(aTHX_ packWARN(WARN_UNINITIALIZED), PL_warn_uninit, "", "");
+            Perl_report_uninit(aTHX_ value);
         return 0;
     }
 
@@ -865,7 +878,7 @@ static UV get_UV(pTHX_ SV *value, const char *context) {
 
     if (!SvOK(value)) {
         if (ckWARN(WARN_UNINITIALIZED))
-            Perl_warner(aTHX_ packWARN(WARN_UNINITIALIZED), PL_warn_uninit, "", "");
+            Perl_report_uninit(aTHX_ value);
         return 0;
     }
 
@@ -1436,14 +1449,9 @@ error_string(SV *errors, SV* dummy=NULL, SV *how=NULL)
         error_string(aTHX_ result, *ptr);
     }
     if (i == 0) croak("No errors in sequence");
-    code = SvUV(result);
     ptr = hv_fetch(err_hv, "where", 5, 0);
     if (!ptr) croak("No where entry");
     sv_catsv(result, *ptr);
-    SvUPGRADE(result, SVt_PVNV);
-    SvIOK_on(result);
-    SvIsUV_on(result);
-    SvUVX(result) = code;
     PUSHs(result);
 
 BOOT:

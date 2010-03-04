@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl 01_constants.t'
-
+# `make test'. After `make install' it should work as `perl 001_constants.t'
 use strict;
 use warnings;
 BEGIN { $^W = 1 };

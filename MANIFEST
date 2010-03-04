@@ -14,7 +14,7 @@ BigInt/t/004_hex.t
 BigInt/t/005_mpi.t
 BigInt/t/006_bin.t
 BigInt/t/007_sensitive.t
-BigInt/t/008_tainted.t
+BigInt/t/008_taint.t
 BigInt/t/009_clear.t
 BigInt/t/010_add.t
 BigInt/t/011_subtract.t
@@ -87,7 +87,7 @@ BigInt/t/092_print_HEX.t
 BigInt/t/093_bio_print_HEX.t
 BigInt/t/100_reciprocal_new.t
 BigInt/t/101_reciprocal_sensitive.t
-BigInt/t/102_recp_tainted.t
+BigInt/t/102_recp_taint.t
 BigInt/t/103_reciprocal_mod_multiply.t
 BigInt/t/104_reciprocal_divide.t
 BigInt/t/105_reciprocal_quotient.t
@@ -136,7 +136,7 @@ Engine/lib/WEC/SSL/Engine.pm
 Engine/lib/WEC/SSL/EngineList.pm
 Engine/t/00_load.t
 Engine/t/01_by_name.t
-Engine/t/02_tainted.t
+Engine/t/02_taint.t
 Engine/t/03_name.t
 Engine/t/04_description.t
 Engine/t/05_flags.t
@@ -187,7 +187,7 @@ Utils/lib/WEC/SSL/Utils.pm
 Utils/t/00_load.t
 Utils/t/01_utils.t
 Utils/t/02_error.t
-Utils/t/03_tainted.t
+Utils/t/03_taint.t
 WEC-SSL-0.01.tar.gz
 X509/MANIFEST
 X509/MANIFEST.SKIP

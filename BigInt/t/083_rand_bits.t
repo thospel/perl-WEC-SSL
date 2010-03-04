@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl -T 83_rand_bits.t'
-
+# `make test'. After `make install' it should work as `perl -T 083_rand_bits.t'
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -36,7 +35,7 @@ $result = Big->rand_bits(bit_length => 0);
 is("$result", 0);
 isa_ok($result, "Big");
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $result = eval { Big->rand_bits(bit_length => -1) };
 like($@, qr/^Negative number of bits at /i);
@@ -146,42 +145,42 @@ for (6, 7) {
 $result = Big->rand_bits(bit_length => 5, sensitive => 1);
 ok($result < 2**5);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(5);
 $val->sensitive(1);
 $result = Big->rand_bits(bit_length => $val);
 ok($result < 2**$val);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(1);
 $val->sensitive(1);
 $result = Big->rand_bits(bit_length => 5, lsb_ones => $val);
 ok($result < 2**5);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(1);
 $val->sensitive(1);
 $result = Big->rand_bits(bit_length => 5, msb_ones => $val);
 ok($result < 2**5);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(1);
 $val->sensitive(1);
 $result = Big->rand_bits(bit_length => 5, msb_ones => $val, sensitive => 0);
 ok($result < 2**5);
 ok(!$result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(1);
 $val->sensitive(1);
 $result = Big->rand_bits(bit_length => 5, sensitive => $val);
 ok($result < 2**5);
 ok($result->sensitive);
-ok(!$result->tainted);
+ok(!$result->taint);
 
 $val = Big->new(0);
 $val->sensitive(1);
@@ -190,25 +189,25 @@ like($@, qr/^Turning sensitivity off using a sensitive value at /);
 
 # Tainted
 $val = Big->new(5);
-$val->tainted(1);
+$val->taint(1);
 $result = Big->rand_bits(bit_length => $val);
 ok($result < 2**$val);
 ok(!$result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
 $val = Big->new(1);
-$val->tainted(1);
+$val->taint(1);
 $result = Big->rand_bits(bit_length => 5, lsb_ones => $val);
 ok($result < 2**5);
 ok(!$result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
 $val = Big->new(1);
-$val->tainted(1);
+$val->taint(1);
 $result = Big->rand_bits(bit_length => 5, msb_ones => $val);
 ok($result < 2**5);
 ok(!$result->sensitive);
-ok($result->tainted);
+ok($result->taint);
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

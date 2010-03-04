@@ -74,9 +74,8 @@ EOF
 
 $postamble{ppport} = <<'EOF';
 $(XS_FILES): ../include/ppport.h
-	$(PERLRUN) ../include/ppport.h $(XS_FILES) | patch -E
-	$(PERLRUN) -pi -e 's{\Q+#include "ppport.h"\E\n}{}' $(XS_FILES)
-	$(NOECHO) $(TOUCH) $(XS_FILES)
+	$(PERLRUN) ../include/ppport.h --copy .patched $(XS_FILES)
+	$(PERLRUN) -e 'for (@ARGV) { local $$/; open(my $$in, "<", "$$_.patched") || die "Could not open \x27$$_.patched\x27: $$!"; my $$content = <$$in>; $$content =~ s{\Q#include "ppport.h"\E\n}{}; close($$in) || die "Error closing \x27$$_.patched\x27: $$!"; open(my $$out, ">", "$$_.patched") || die "Could not write to \x27$$_.patched\x27: $$!"; print($$out $$content) || die "Error writing to \x27$$_.patched\x27: $$!"; close($$out) || die "Could not close \x27$$_.patched\x27: $$!"; rename("$$_.patched", $$_) || die "Could not rename \x27$$_\x27 to \x27$$_\x27: $$!"; }' $(XS_FILES)
 
 EOF
 }

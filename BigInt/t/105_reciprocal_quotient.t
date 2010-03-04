@@ -1,7 +1,6 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 105_reciprocal_quotient.t'
-
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);
@@ -49,17 +48,17 @@ for (0..3) {
     $m->sensitive(1) if $_ & 2;
     $result = $m->quotient($a);
     ok(!$result->sensitive ^ !!$_);
-    ok(!$result->tainted);
+    ok(!$result->taint);
     is("$result", 2);
 }
 
 for (0..3) {
     $a = Big->new(17);
-    $a->tainted(1) if $_ & 1;
+    $a->taint(1) if $_ & 1;
     $m = WEC::SSL::Reciprocal->new(7);
-    $m->tainted(1) if $_ & 2;
+    $m->taint(1) if $_ & 2;
     $result = $m->quotient($a);
-    ok(!$result->tainted ^ !!$_);
+    ok(!$result->taint ^ !!$_);
     ok(!$result->sensitive);
     is("$result", 2);
 }
