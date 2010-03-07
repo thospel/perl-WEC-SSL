@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -47,52 +47,25 @@ $result = $arg1->abs_bit(-1);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(-1, 0) = 1
 $arg1 = Big->new(-1);
@@ -109,59 +82,35 @@ $result = WEC::SSL::BigInt::abs_bit(-1, 0);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(0);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "", "Result is not a BigInt");
+    is($result, 1);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(!tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
 
 # abs_bit(-1, 1) = 0
@@ -179,67 +128,41 @@ $result = WEC::SSL::BigInt::abs_bit(-1, 1);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(1);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(0, -1) fails
 $arg1 = Big->new(0);
 $arg2 = Big->new(-1);
-
 ok(!tainted($arg1));
 ok(!tainted($arg2));
+
 $result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
 like($@, qr/\QBitnumber too negative/i);
 
@@ -253,39 +176,20 @@ $result = eval { $arg1->abs_bit(-1) };
 like($@, qr/\QBitnumber too negative/i);
 
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->sensitive(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg1->sensitive(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->sensitive(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
+    like($@, qr/\QBitnumber too negative/i);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
+    like($@, qr/\QBitnumber too negative/i);
+}
 
 # abs_bit(0, 0) = 0
 $arg1 = Big->new(0);
@@ -302,60 +206,35 @@ $result = WEC::SSL::BigInt::abs_bit(0, 0);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(0);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(0, 1) = 0
 $arg1 = Big->new(0);
@@ -372,60 +251,35 @@ $result = WEC::SSL::BigInt::abs_bit(0, 1);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(1);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(1, -1) = 1
 $arg1 = Big->new(1);
@@ -442,59 +296,35 @@ $result = WEC::SSL::BigInt::abs_bit(1, -1);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(-1);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(!tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
 
 # abs_bit(1, 0) = 1
@@ -520,52 +350,25 @@ $result = $arg1->abs_bit(0);
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(1, 1) = 0
 $arg1 = Big->new(1);
@@ -582,60 +385,35 @@ $result = WEC::SSL::BigInt::abs_bit(1, 1);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(1);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(12, 9) = 0
 $arg1 = Big->new(12);
@@ -660,52 +438,25 @@ $result = $arg1->abs_bit(9);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(-12, 9) = 0
 $arg1 = Big->new(-12);
@@ -730,51 +481,26 @@ $result = $arg1->abs_bit(9);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $arg1->sensitive(1);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 
 # abs_bit(12, -9) fails
@@ -796,21 +522,12 @@ $result = eval { $arg1->abs_bit(-9) };
 like($@, qr/\QBitnumber too negative/i);
 
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->sensitive(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg1->sensitive(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->sensitive(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
-like($@, qr/\QBitnumber too negative/i);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2) };
+    like($@, qr/\QBitnumber too negative/i);
+}
 
 # Check taint propagation
 $arg1->taint(1);
@@ -845,60 +562,36 @@ $result = WEC::SSL::BigInt::abs_bit(-12, 9);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(9);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+# Check taint propagation
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(581, 3) = 0
 $arg1 = Big->new(581);
@@ -915,60 +608,35 @@ $result = WEC::SSL::BigInt::abs_bit(581, 3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(581, -3) = 0
 $arg1 = Big->new(581);
@@ -985,59 +653,36 @@ $result = WEC::SSL::BigInt::abs_bit(581, -3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(-3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $arg1->sensitive(1);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(-581, 3) = 0
 $arg1 = Big->new(-581);
@@ -1054,60 +699,35 @@ $result = WEC::SSL::BigInt::abs_bit(-581, 3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
-
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(-581, -3) = 0
 $arg1 = Big->new(-581);
@@ -1124,59 +744,35 @@ $result = WEC::SSL::BigInt::abs_bit(-581, -3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(-3);
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 ### Setting ####
 
@@ -1214,7 +810,7 @@ $arg2 = Big->new(-1);
 
 $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
 is(ref($result), "");
-ok(!$arg1->sensitive);
+ok(!$arg1->sensitive) if feature_sensitive();
 is("$arg1", 0);
 is($result, 1);
 
@@ -1232,43 +828,34 @@ $result = eval { $arg1->abs_bit(-1, 1) };
 like($@, qr/\QBitnumber too negative/i);
 
 # Check sensitive propagation
-$arg1 = Big->new(-1);
-$arg2 = Big->new(-1);
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
-is(ref($result), "");
-ok($arg1->sensitive);
-is("$arg1", 0);
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1 = Big->new(-1);
+    $arg2 = Big->new(-1);
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
 
-$arg2->sensitive(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0) };
-like($@, qr/\QBitnumber too negative/i);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
+    is(ref($result), "");
+    ok($arg1->sensitive ^ !$_);
+    is("$arg1", 0);
+    is($result, 1);
+}
 
-$arg1->sensitive(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->sensitive(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0) };
-like($@, qr/\QBitnumber too negative/i);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0) };
+    like($@, qr/\QBitnumber too negative/i);
+}
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1) };
-like($@, qr/\QBitnumber too negative/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1) };
+    like($@, qr/\QBitnumber too negative/i);
+}
 
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1) };
-like($@, qr/\QBitnumber too negative/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1) };
-like($@, qr/\QBitnumber too negative/i);
 is("$arg1", 0);
 is("$arg2", -1);
 
@@ -1282,10 +869,11 @@ ok(!tainted($result));
 
 $result = $arg1->abs_bit($arg2, 0);
 is(ref($result), "");
-is("$arg1", 0);
 is($result, 1);
+is("$arg1", 0);
 ok(!tainted($result));
 ok(!tainted($arg1));
+
 $result = $arg1->abs_bit(0, 1);
 is(ref($result), "");
 is($result, 0);
@@ -1293,40 +881,37 @@ ok(!tainted($result));
 is("$arg1", -1);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
-is(ref($result), "");
-is($result, 1);
-is("$arg1", 0);
-ok(tainted($result));
-ok(tainted($arg1));
-ok(!tainted($arg2));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1 = Big->new(-1);
+    $arg2 = Big->new(0);
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
+    is(ref($result), "");
+    is($result, 1);
+    is("$arg1", 0);
+    ok(tainted($result) ^ !$_);
+    ok(tainted($arg1) ^ !$_);
+    ok(tainted($arg2) ^ !($_ & 2));
+}
 
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
-is(ref($result), "");
-is($result, 0);
-is("$arg1", -1);
-ok(tainted($result));
-ok(tainted($arg1));
-ok(tainted($arg2));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
-is(ref($result), "");
-is($result, 1);
-is("$arg1", 0);
-ok(tainted($result));
-ok(!tainted($arg1));
-ok(tainted($arg2));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
-is(ref($result), "");
-is($result, 0);
-is("$arg1", -1);
-ok(!tainted($result));
-
+# Check taint propagation
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1 = Big->new(-1);
+    $arg2 = Big->new(0);
+    # Next dummy line somehow causes the argument not to be tainted
+    # ANY statement here seems to work
+    my $dummy;
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
+    is(ref($result), "");
+    is($result, 1);
+    is("$arg1", -1);
+    ok(tainted($result) ^ !$_);
+    ok(tainted($arg1) ^ !$_);
+    ok(tainted($arg2) ^ !($_ & 2));
+}
 
 # abs_bit(-1, 1) = 1
 $arg1 = Big->new(-1);
@@ -1337,11 +922,13 @@ is(ref($result), "");
 is($result, 0);
 is("$arg1", -1);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2, 1);
 is(ref($result), "");
 is($result, 0);
 is("$arg1", -3);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(1, 1);
 is(ref($result), "");
 is($result, 1);
@@ -1349,107 +936,73 @@ is("$arg1", -3);
 ok(!tainted($result));
 
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
-is(ref($result), "");
-ok($arg1->sensitive);
-is("$arg1", -3);
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1 = Big->new(-3);
+    $arg2 = Big->new(1);
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
+    is(ref($result), "");
+    ok($arg1->sensitive ^ !$_);
+    is("$arg1", -3);
+    is($result, 1);
+}
 
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
-is(ref($result), "");
-ok($arg1->sensitive);
-is("$arg1", -1);
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1 = Big->new(-1);
+    $arg2 = Big->new(1);
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
+    ok($arg1->sensitive ^ !$_);
+    is("$arg1", -1);
+    is(ref($result), "");
+    is($result, 0);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
-ok($arg1->sensitive);
-is(ref($result), "");
-is("$arg1", -3);
-is($result, 0);
+my $arg3;
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 1);
-ok($arg1->sensitive);
-is("$arg1", -3);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 7 : -1)) {
+    $arg1 = Big->new(-1);
+    $arg2 = Big->new(1);
+    $arg3 = Big->new(3);
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $arg3->sensitive($_ & 4);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, $arg3);
+    ok($arg1->sensitive ^ !$_);
+    is("$arg1", -3);
+    is(ref($result), "");
+    is($result, 0);
+    ok($arg2->sensitive ^ !($_ & 2));
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, 0);
-ok($arg1->sensitive);
-is("$arg1", -1);
-is(ref($result), "");
-is($result, 1);
-
-$arg1->sensitive(0);
-$arg2->sensitive(0);
-my $arg3 = Big->new(3);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, $arg3);
-ok(!$arg1->sensitive);
-is("$arg1", -3);
-is(ref($result), "");
-is($result, 0);
-ok(!$arg2->sensitive);
-
-$arg1->sensitive(0);
-$arg3 = Big->new(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, $arg3);
-ok(!$arg1->sensitive);
-is("$arg1", -1);
-is(ref($result), "");
-is($result, 1);
-ok(!$arg2->sensitive);
-$arg1->sensitive(0);
-
-$arg1->sensitive(0);
-$arg2->sensitive(0);
-$arg3 = Big->new(3);
-$arg3->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, $arg3);
-ok($arg1->sensitive);
-is("$arg1", -3);
-is(ref($result), "");
-is($result, 0);
-ok(!$arg2->sensitive);
-
-$arg1->sensitive(0);
-$arg3 = Big->new(0);
-$arg3->sensitive(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, $arg3);
-ok($arg1->sensitive);
-is("$arg1", -1);
-is(ref($result), "");
-is($result, 1);
-ok(!$arg2->sensitive);
-$arg1->sensitive(0);
+for (0..(feature_sensitive() ? 7 : -1)) {
+    $arg1 = Big->new(-3);
+    $arg2 = Big->new(1);
+    $arg3 = Big->new(0);
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $arg3->sensitive($_ & 4);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2, $arg3);
+    ok($arg1->sensitive ^ !$_);
+    is("$arg1", -1);
+    is(ref($result), "");
+    is($result, 1);
+    ok($arg2->sensitive ^ !($_ & 2));
+}
 
 # Check taint propagation
 $arg1 = Big->new(-1);
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
-
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
+$arg2 = Big->new(1);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::abs_bit($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result) ^ !$_);
+}
 
 # abs_bit(0, -1) fails
 $arg1 = Big->new(0);
@@ -1686,11 +1239,13 @@ is(ref($result), "");
 is($result, 0);
 is("$arg1", -581);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit($arg2, 1);
 is(ref($result), "");
 is($result, 0);
 is("$arg1", -589);
 ok(!tainted($result));
+
 $result = $arg1->abs_bit(3, 1);
 is(ref($result), "");
 is($result, 1);

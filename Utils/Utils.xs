@@ -1050,6 +1050,7 @@ openssl_version()
 bool
 feature_sensitive()
   CODE:
+    TAINT_NOT;
     RETVAL = SENSITIVE;
   OUTPUT:
     RETVAL
@@ -1057,6 +1058,7 @@ feature_sensitive()
 bool
 feature_magic()
   CODE:
+    TAINT_NOT;
     RETVAL = DO_MAGIC;
   OUTPUT:
     RETVAL
@@ -1064,6 +1066,7 @@ feature_magic()
 bool
 feature_taint()
   CODE:
+    TAINT_NOT;
     RETVAL = 1;
   OUTPUT:
     RETVAL

@@ -1454,6 +1454,7 @@ bit(SV *arg, SV *bit_nr, SV *value=NULL)
             if (bigsensitive) result->sensitive = bigsensitive->sensitive;
         }
 #endif /* SENSITIVE */
+        SvTAINT(arg);
     }
   do_fix:
     if (fixup) {

@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -45,7 +45,7 @@ for my $aa (-2, -1, 0, 1, 2) {
     }
 }
 
-for (0..7) {
+for (0..(feature_sensitive() ? 7 : 0)) {
     $a = Big->new(4);
     $a->sensitive(1) if $_ & 1;
     $b = Big->new(8);
@@ -53,23 +53,23 @@ for (0..7) {
     $m = Big->new(10);
     $m->sensitive(1) if $_ & 4;
     $result = $a->mod_multiply($b, $m);
-    ok(!$result->sensitive ^ !!$_);
-    ok(!$result->taint);
+    ok(!$result->sensitive ^ !!$_) if feature_sensitive();
+    ok(!$result->taint) if feature_taint();
     is("$result", 2);
 }
 
-for (0..3) {
+for (0..(feature_sensitive() ? 3 : 0)) {
     $a = Big->new(8);
     $a->sensitive(1) if $_ & 1;
     $m = Big->new(10);
     $m->sensitive(1) if $_ & 2;
     $result = $a->mod_multiply($a, $m);
-    ok(!$result->sensitive ^ !!$_);
-    ok(!$result->taint);
+    ok(!$result->sensitive ^ !!$_) if feature_sensitive();
+    ok(!$result->taint) if feature_taint();
     is("$result", 4);
 }
 
-for (0..7) {
+for (0..(feature_taint() ? 7 : 0)) {
     $a = Big->new(4);
     $a->taint(1) if $_ & 1;
     $b = Big->new(8);
@@ -77,19 +77,19 @@ for (0..7) {
     $m = Big->new(10);
     $m->taint(1) if $_ & 4;
     $result = $a->mod_multiply($b, $m);
-    ok(!$result->taint ^ !!$_);
-    ok(!$result->sensitive);
+    ok(!$result->taint ^ !!$_) if feature_taint();
+    ok(!$result->sensitive) if feature_sensitive();
     is("$result", 2);
 }
 
-for (0..3) {
+for (0..(feature_taint() ? 3 : 0)) {
     $a = Big->new(8);
     $a->taint(1) if $_ & 1;
     $m = Big->new(10);
     $m->taint(1) if $_ & 2;
     $result = $a->mod_multiply($a, $m);
-    ok(!$result->taint ^ !!$_);
-    ok(!$result->sensitive);
+    ok(!$result->taint ^ !!$_) if feature_taint();
+    ok(!$result->sensitive) if feature_sensitive();
     is("$result", 4);
 }
 
