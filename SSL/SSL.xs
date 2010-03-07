@@ -113,7 +113,7 @@ static int verify_callback(int ok, X509_STORE_CTX *store) {
         if (!ssl_wrapper) croak("Assert: could not determine perl SSL object in verify_callback");
         if (!ssl_wrapper->context) croak("Assert: No context in SSL object");
         tmp = SvIV(ssl_wrapper->context);
-        if (!tmp) croak("SSL object context is not really a " PACKAGE_BASE "::Context object");
+        if (!tmp) croak("SSL object context is not really a " PACKAGE_BASE "::SSLContext object");
         ssl_context = INT2PTR(wec_ssl_context, tmp);
 
         Newx(x509, 1, struct wec_x509);
@@ -152,12 +152,12 @@ static SV *ssl_options(pTHX_ SV *sv_ssl_context,
     if (items % 2) croak("Odd number of arguments");
 
     if (!SvOK(sv_ssl_context)) croak("ssl_context is undefined");
-    if (!sv_derived_from(sv_ssl_context, PACKAGE_BASE "::Context"))
-	croak("ssl_context is not of type " PACKAGE_BASE "::Context");
+    if (!sv_derived_from(sv_ssl_context, PACKAGE_BASE "::SSLContext"))
+	croak("ssl_context is not of type " PACKAGE_BASE "::SSLContext");
     if (!SvROK(sv_ssl_context)) croak("ssl_context is not a reference");
     sv_ssl_context = SvRV(sv_ssl_context);
     tmp = SvIV(sv_ssl_context);
-    if (!tmp) croak("ssl_context is not really a " PACKAGE_BASE "::Context object");
+    if (!tmp) croak("ssl_context is not really a " PACKAGE_BASE "::SSLContext object");
     ssl_context = INT2PTR(wec_ssl_context, tmp);
 
     Newx(ssl, 1, struct wec_ssl);
@@ -329,12 +329,16 @@ get(wec_ssl ssl, int len)
     sv_setpvn(RETVAL, "", 0);
     buf = SvPV(RETVAL, dummy);
     rc = SSL_read(ssl->ssl, buf, len);
-    if (rc <= 0) {
+    if (rc > 0) {
+        SvCUR_set(RETVAL, rc);
+        buf[rc] = 0;
+    } else {
         SvREFCNT_dec(RETVAL);
-        ssl_croak(ssl, "read", rc);
+        rc = SSL_get_error(ssl->ssl, rc);
+        if (rc != SSL_ERROR_ZERO_RETURN)
+            croak("Could not read (%s)", ssl_strerror(rc));
+        RETVAL = &PL_sv_undef;
     }
-    SvCUR_set(RETVAL, rc);
-    buf[rc] = 0;
   OUTPUT:
     RETVAL
 

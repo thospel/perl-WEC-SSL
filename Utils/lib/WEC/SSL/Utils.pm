@@ -9,7 +9,7 @@ require XSLoader;
 XSLoader::load('WEC::SSL::Utils', $VERSION);
 
 use Exporter::Tidy
-    other => [qw(tainted fchmod)];
+    other => [qw(taint fchmod)];
 
 package WEC::SSL::Errors;
 # Declare here instead of in Errors.pm since we *always* want these overloads

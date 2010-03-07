@@ -7,10 +7,9 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN {
-    use_ok("WEC::SSL::BigInt");
-    use_ok("WEC::SSL::Reciprocal");
-};
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
+use WEC::SSL::Reciprocal;
 
 {
     package Big;
@@ -23,25 +22,38 @@ my $taint = substr("$^X$0", 0, 0);
 
 for my $n (-25, -1, 1, 25, "123456789" x 100) {
     $rec = WEC::SSL::Reciprocal->new($n);
-    ok(!$rec->sensitive);
-    ok(!$rec->taint);
+    ok(!$rec->sensitive) if feature_sensitive();
+    ok(!$rec->taint) if feature_taint();
 
-    $val = Big->new($n);
-    $val->sensitive(1);
-    $rec = WEC::SSL::Reciprocal->new($val);
-    ok($rec->sensitive);
-    ok(!$rec->taint);
+  SKIP: {
+      skip "Compiled without sensitive support" if !feature_sensitive();
 
-    $val = Big->new($n . $taint);
-    $rec = WEC::SSL::Reciprocal->new($val);
-    ok(!$rec->sensitive);
-    ok($rec->taint);
+      $val = Big->new($n);
+      $val->sensitive(1);
+      $rec = WEC::SSL::Reciprocal->new($val);
+      ok($rec->sensitive);
+      ok(!$rec->taint) if feature_taint();
+    }
 
-    $val = Big->new($n . $taint);
-    $val->sensitive(1);
-    $rec = WEC::SSL::Reciprocal->new($val);
-    ok($rec->sensitive);
-    ok($rec->taint);
+  SKIP: {
+      skip "Compiled without taint support" if !feature_taint();
+      
+      $val = Big->new($n . $taint);
+      $rec = WEC::SSL::Reciprocal->new($val);
+      ok(!$rec->sensitive) if feature_sensitive();
+      ok($rec->taint);
+    }
+
+  SKIP: {
+      skip "Compiled without taint support" if !feature_taint();
+      skip "Compiled without sensitive support" if !feature_sensitive();
+
+      $val = Big->new($n . $taint);
+      $val->sensitive(1);
+      $rec = WEC::SSL::Reciprocal->new($val);
+      ok($rec->sensitive);
+      ok($rec->taint);
+    }
 }
 
 $rec = eval { WEC::SSL::Reciprocal->new(0) };

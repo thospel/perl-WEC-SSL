@@ -6,4 +6,6 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL::Bio') };
+for my $module (qw(WEC::SSL::Bio WEC::SSL)) {
+    use_ok($module) || BAIL_OUT("Cannot even use $module");
+}

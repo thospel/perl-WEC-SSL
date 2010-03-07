@@ -6,5 +6,6 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL::X509') };
+use WEC::SSL::X509;
 
+pass("dummy");

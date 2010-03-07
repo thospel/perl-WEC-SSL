@@ -10,7 +10,7 @@ use Fcntl  qw(S_IMODE);
 our $VERSION = "1.000";
 
 # Load XS prerequisites
-use WEC::SSL::Utils qw(tainted fchmod);
+use WEC::SSL::Utils qw(taint fchmod);
 
 require XSLoader;
 XSLoader::load('WEC::SSL::Rand', $VERSION);
@@ -19,7 +19,7 @@ use Exporter::Tidy
     other => [qw(seed seed_canonical status
                  bytes pseudo_bytes string pseudo_string
                  try_load_file try_write_file load_file store_file write_file
-                 filename try_load_from_egd load_from_egd try_fetch_from_egd 
+                 filename try_load_from_egd load_from_egd try_fetch_from_egd
                  fetch_from_egd egd_entropy RAND_DATA)];
 
 use constant {
@@ -44,7 +44,7 @@ sub load_file {
         # Taint propagation
         $read += substr("0$buffer", 0, 1) if !$read;
         last if $rc == 0;
-        tainted($buffer, 0);
+        taint($buffer, 0);
         seed($buffer);
         $read += $rc;
         $left -= $rc;
@@ -148,7 +148,7 @@ sub load_from_egd {
         while ($nr) {
             my $rc = sysread($s, $buffer, $nr, $got);
             if (!$rc) {
-                tainted($buffer, 0);
+                taint($buffer, 0);
                 seed($buffer) if $got;
                 croak "Error reading from '$pathname': $!" if !defined $rc;
                 croak "Unexpected EOF from '$pathname'";
@@ -156,7 +156,7 @@ sub load_from_egd {
             $got += $rc;
             $nr  -= $rc;
         }
-        tainted($buffer, 0);
+        taint($buffer, 0);
         seed($buffer) if $got;
         $gotten += $got;
         last if $got < $wanted;
@@ -195,7 +195,7 @@ sub fetch_from_egd {
         while ($got < $nr) {
             my $rc = sysread($s, $result, $nr-$got, $gotten);
             if (!$rc) {
-                tainted($result, 0);
+                taint($result, 0);
                 seed($result) if $gotten;
                 croak "Error reading from '$pathname': $!" if !defined $rc;
                 croak "Unexpected EOF from '$pathname'";
@@ -205,9 +205,9 @@ sub fetch_from_egd {
         }
         last if $got < $wanted;
     }
-    tainted($result, 0);
+    taint($result, 0);
     seed($result);
-    tainted($result, 1) if tainted($nr_bytes);
+    taint($result, 1) if taint($nr_bytes);
     return $result;
 }
 
@@ -215,7 +215,7 @@ sub egd_entropy {
     my ($pathname) = @_;
     socket(my $s, AF_UNIX, SOCK_STREAM, 0) ||
         croak "Could not an unix socket: $!";
-    my $path_tainted = tainted($pathname, 0);
+    my $path_tainted = taint($pathname, 0);
     until (connect($s, pack_sockaddr_un($pathname))) {
         # OpenSSL has a lot more non-error errno's here. I don't buy them.
         croak "Could not connect to '$pathname': $!" if $! != EINTR;
@@ -235,7 +235,7 @@ sub egd_entropy {
         $nr  -= $rc;
     }
     my $entropy = unpack("N", $buffer) / 8;
-    tainted($entropy, $path_tainted);
+    taint($entropy, $path_tainted);
     return $entropy;
 }
 
@@ -251,7 +251,7 @@ WEC::SSL::Rand - OpenSSL PRNG operations
   use WEC::SSL::Utils;
 
   # The following lines assume the used functions have been imported.
-  # Otherwise write things like tainted as WEC::SSL::Rand::tainted
+  # Otherwise write things like taint as WEC::SSL::Rand::taint
 
   # Seeding the PRNG
   seed($bytes, $entropy);
@@ -307,8 +307,8 @@ is contained in $bytes, measured in bytes. Details about sources of randomness
 and how to estimate their entropy can be found in the literature, e.g.
 RFC 1750.
 
-An exception is raised if the entropy argument is negative or greater than the 
-byte-length of $bytes. This test may not be strict enough though in case 
+An exception is raised if the entropy argument is negative or greater than the
+byte-length of $bytes. This test may not be strict enough though in case
 $bytes is an upgraded string internally.
 
 An exception is also raised if $entropy or $bytes is tainted while $entropy
@@ -591,7 +591,7 @@ L<RAND_egd_query_bytes|RAND_egd_query_bytes(3)>.
 
 =item $bytes = egd_entropy($pathname);
 
-Returns the entropy available in $pathname measured in bytes. The result 
+Returns the entropy available in $pathname measured in bytes. The result
 can be fractional (EGD measures its entropy in bits).
 
 =item X<RAND_DATA>$length = RAND_DATA()

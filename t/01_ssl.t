@@ -8,7 +8,7 @@ use Test::More "no_plan";
 
 BEGIN { use_ok('WEC::SSL') };
 
-my @methods = qw(openssl_version);
+my @methods = qw(openssl_version feature_sensitive feature_taint feature_magic);
 can_ok("WEC::SSL", @methods);
 for my $method (@methods) {
     next if ! __PACKAGE__->can($method);
@@ -22,3 +22,12 @@ my $num_v = $version + 0;
 ok($num_v >= 0x00908000);
 my $string_v = "$version";
 ok($string_v =~ /OpenSSL/i);
+
+eval { WEC::SSL::feature_sensitive() };
+pass("has feature_sensitive");
+
+eval { WEC::SSL::feature_taint() };
+pass("has feature_taint");
+
+eval { WEC::SSL::feature_magic() };
+pass("has feature_magic");

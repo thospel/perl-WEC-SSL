@@ -7,7 +7,8 @@ use Scalar::Util ();
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok("WEC::SSL::Engine") };
+use WEC::SSL::Engine
+;
 
 {
     package Big;

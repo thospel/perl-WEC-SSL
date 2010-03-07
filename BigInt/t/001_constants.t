@@ -6,7 +6,7 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL::BigInt') };
+use WEC::SSL::BigInt;
 
 my @methods = qw(is_zero is_one ZERO ONE);
 can_ok("WEC::SSL::BigInt", @methods);

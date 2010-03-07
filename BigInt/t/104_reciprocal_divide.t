@@ -7,10 +7,9 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN {
-    use_ok("WEC::SSL::BigInt");
-    use_ok("WEC::SSL::Reciprocal");
-};
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
+use WEC::SSL::Reciprocal;
 
 {
     package Big;
@@ -47,40 +46,40 @@ for my $aa (-2, -1, 0, 1, 2) {
     }
 }
 
-for (0..3) {
+for (0..(feature_sensitive() ? 3 : 0)) {
     $a = Big->new(17);
     $a->sensitive(1) if $_ & 1;
     $m = WEC::SSL::Reciprocal->new(7);
     $m->sensitive(1) if $_ & 2;
     $result = $m->divide($a);
-    ok(!$result->sensitive ^ !!$_);
-    ok(!$result->taint);
+    ok(!$result->sensitive ^ !!$_) if feature_sensitive();
+    ok(!$result->taint) if feature_taint();
     is("$result", 2);
 
     my ($q, $r) = $m->divide($a);
-    ok(!$q->sensitive ^ !!$_);
-    ok(!$r->sensitive ^ !!$_);
-    ok(!$q->taint);
-    ok(!$r->taint);
+    ok(!$q->sensitive ^ !!$_) if feature_sensitive();
+    ok(!$r->sensitive ^ !!$_) if feature_sensitive();
+    ok(!$q->taint) if feature_taint();
+    ok(!$r->taint) if feature_taint();
     is("$q", 2);
     is("$r", 3);
 }
 
-for (0..3) {
+for (0..(feature_taint() ? 3 : 0)) {
     $a = Big->new(17);
     $a->taint(1) if $_ & 1;
     $m = WEC::SSL::Reciprocal->new(7);
     $m->taint(1) if $_ & 2;
     $result = $m->divide($a);
-    ok(!$result->taint ^ !!$_);
-    ok(!$result->sensitive);
+    ok(!$result->taint ^ !!$_) if feature_taint();
+    ok(!$result->sensitive) if feature_sensitive();
     is("$result", 2);
 
     my ($q, $r) = $m->divide($a);
-    ok(!$q->sensitive);
-    ok(!$r->sensitive);
-    ok(!$q->taint ^ !!$_);
-    ok(!$r->taint ^ !!$_);
+    ok(!$q->sensitive) if feature_sensitive();
+    ok(!$r->sensitive) if feature_sensitive();
+    ok(!$q->taint ^ !!$_) if feature_taint();
+    ok(!$r->taint ^ !!$_) if feature_taint();
     is("$q", 2);
     is("$r", 3);
 }

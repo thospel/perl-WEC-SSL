@@ -11,10 +11,9 @@ use Fcntl ':mode';
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN {
-    use_ok('WEC::SSL::Rand');
-    use_ok('WEC::SSL::BigInt');
-};
+use WEC::SSL::Rand;
+    use WEC::SSL::BigInt;
+;
 
 my $taint = substr("$^X$0", 0, 0);
 

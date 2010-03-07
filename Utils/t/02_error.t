@@ -6,8 +6,10 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok("WEC::SSL::Error") };
-BEGIN { use_ok("WEC::SSL::BigInt") };
+use WEC::SSL::Error
+;
+use WEC::SSL::BigInt
+;
 
 my @methods = qw(LIB_NONE LIB_SYS LIB_BN LIB_RSA LIB_DH LIB_EVP LIB_BUF LIB_OBJ
                  LIB_PEM LIB_DSA LIB_X509 LIB_ASN1 LIB_CONF LIB_CRYPTO LIB_EC

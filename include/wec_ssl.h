@@ -134,7 +134,11 @@ struct util {
     void (*not_a_number)(pTHX_ SV *sv, const char *from, STRLEN len);
     void *(*c_sv)(pTHX_ SV *object, const char *class,const char *context);
     void *(*c_object)(pTHX_ SV *object, const char *class,const char *context);
-    int (*get_int)(pTHX_ SV *value, bool *sensitive, const char *context);
+    int (*get_int)(pTHX_ SV *value, 
+#if SENSITIVE
+                   bool *sensitive, 
+#endif /* SENSITIVE */
+                   const char *context);
     long (*get_long)(pTHX_ SV *value, const char *context);
     UV (*get_UV)(pTHX_ SV *value, const char *context);
     int (*low_eq)(const char *name, const char *target);
@@ -167,9 +171,16 @@ struct util {
 #define C_OBJECT(object, class, context)	\
 	utils.c_object(aTHX_ object, class, context)
 
-#define GET_INT(value, context) utils.get_int(aTHX_ value, NULL, context)
-#define GET_INT_SENSITIVE(value, sensitive, context)	\
+#if SENSITIVE
+# define GET_INT_SENSITIVE(value, sensitive, context)	\
 	utils.get_int(aTHX_ value, &sensitive, context)
+# define GET_INT(value, context)			\
+	utils.get_int(aTHX_ value, NULL, context)
+#else /* SENSITIVE */
+# define GET_INT_SENSITIVE(value, sensitive, context)	\
+	utils.get_int(aTHX_ value, context)
+# define GET_INT(value, context)	utils.get_int(aTHX_ value, context)
+#endif /* SENSITIVE */
 
 #define GET_LONG(value, context) utils.get_long(aTHX_ value, context)
 

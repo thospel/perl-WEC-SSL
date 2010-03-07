@@ -7,7 +7,9 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok("WEC::SSL::BigInt") };
+use WEC::SSL qw(feature_sensitive feature_taint);
+    use WEC::SSL::BigInt;
+;
 
 {
     package Big;
@@ -28,8 +30,8 @@ my ($val, $result);
 $val = Big->new(1);
 $result = $val->pseudo_rand;
 is("$result", 0);
-ok(!$result->sensitive);
-ok(!$result->taint);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!$result->taint) if feature_taint();
 
 $val = Big->new(0);
 $result = eval { $val->pseudo_rand };
@@ -49,19 +51,27 @@ for (0..$val-1) {
     ok($results{$_} > 1000/$val/2);
 }
 
-$val = Big->new(5);
-$val->sensitive(1);
-$result = $val->pseudo_rand;
-ok($result < $val);
-ok($result->sensitive);
-ok(!$result->taint);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$val = Big->new(5);
-$val->taint(1);
-$result = $val->pseudo_rand;
-ok($result < $val);
-ok(!$result->sensitive);
-ok($result->taint);
+    $val = Big->new(5);
+    $val->sensitive(1);
+    $result = $val->pseudo_rand;
+    ok($result < $val);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
+}
+
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
+
+    $val = Big->new(5);
+    $val->taint(1);
+    $result = $val->pseudo_rand;
+    ok($result < $val);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok($result->taint);
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

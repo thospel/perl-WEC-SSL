@@ -7,7 +7,8 @@ use Scalar::Util ();
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok("WEC::SSL::Reciprocal") };
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::Reciprocal;
 
 {
     package Big;
@@ -24,41 +25,48 @@ for my $method (@methods) {
 my ($result, $tmp);
 
 $tmp = $result = Big->new(-28);
-ok(!$result->taint);
-$result->taint(1);
-ok($result->taint);
-ok(Scalar::Util::tainted($result));
-ok(Scalar::Util::tainted($$result));
-ok(!Scalar::Util::tainted($tmp));
-ok(Scalar::Util::tainted($$tmp));
-$result->taint(0);
-ok(!$result->taint);
-ok(!Scalar::Util::tainted($result));
-ok(!Scalar::Util::tainted($$result));
-ok(!Scalar::Util::tainted($tmp));
-ok(!Scalar::Util::tainted($$tmp));
-$result->taint(28);
-ok($result->taint);
-$result->taint(undef);
-ok(!$result->taint);
-$result->taint([]);
-ok($result->taint);
-$result->taint("0");
-ok(!$result->taint);
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
+    ok(!$result->taint);
+    $result->taint(1);
+    ok($result->taint);
+    ok(Scalar::Util::tainted($result));
+    ok(Scalar::Util::tainted($$result));
+    ok(!Scalar::Util::tainted($tmp));
+    ok(Scalar::Util::tainted($$tmp));
+    $result->taint(0);
+    ok(!$result->taint);
+    ok(!Scalar::Util::tainted($result));
+    ok(!Scalar::Util::tainted($$result));
+    ok(!Scalar::Util::tainted($tmp));
+    ok(!Scalar::Util::tainted($$tmp));
+    $result->taint(28);
+    ok($result->taint);
+    $result->taint(undef);
+    ok(!$result->taint);
+    $result->taint([]);
+    ok($result->taint);
+    $result->taint("0");
+    ok(!$result->taint);
 
-$tmp = WEC::SSL::BigInt->new(14);
-$tmp->taint(1);
-$result->taint($tmp);
-ok($result->taint);
+    $tmp = WEC::SSL::BigInt->new(14);
+    $tmp->taint(1);
+    $result->taint($tmp);
+    ok($result->taint);
 
-$tmp = WEC::SSL::BigInt->new(0);
-$tmp->taint(1);
-eval { $result->taint($tmp) };
-like($@, qr/^Turning tainting off using a tainted value at /i);
-ok($result->taint);
+    $tmp = WEC::SSL::BigInt->new(0);
+    $tmp->taint(1);
+    eval { $result->taint($tmp) };
+    like($@, qr/^Turning tainting off using a tainted value at /i);
+    ok($result->taint);
+}
 
-isa_ok($result, "Big");
-ok(!$result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    isa_ok($result, "Big");
+    ok(!$result->sensitive);
+}
 
 "WEC::SSL::Reciprocal"->import(@methods);
 can_ok(__PACKAGE__, @methods);

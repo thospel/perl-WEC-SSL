@@ -16,11 +16,17 @@ static const struct wec_bigint ZERO = {
 #endif /* SENSITIVE */
 };
 
+#if SENSITIVE
+# define ZERO_SENSITIVE(x)	(x)->sensitive = 0
+#else  /* SENSITIVE */
+# define ZERO_SENSITIVE(x)
+#endif /* SENSITIVE */
+
 #define NEW_BIGINT(bigint, object)	\
     NEW_CLASS(bigint, object, PACKAGE_BASE "::BigInt")
 #define NEW_CLASS(bigint, object, class) STMT_START {	\
-    Newx(bigint, 1, struct wec_bigint);	\
-    if (SENSITIVE) bigint->sensitive = 0;		\
+    Newx(bigint, 1, struct wec_bigint);			\
+    ZERO_SENSITIVE(bigint);				\
     BN_init(&(bigint)->num);				\
     (object) = sv_newmortal();				\
     sv_setref_pv(object, class, (void*) (bigint));	\
@@ -89,8 +95,11 @@ static const char *c_hex(pTHX_ SV *sv_string, const char *context) {
 
 static void free_bigint(void *v) {
     wec_bigint bigint = v;
-    if (SENSITIVE && bigint->sensitive) BN_clear_free(&bigint->num);
-    else BN_free(&bigint->num);
+#if SENSITIVE
+    if (bigint->sensitive) BN_clear_free(&bigint->num);
+    else
+#endif /* SENSITIVE */
+    BN_free(&bigint->num);
     Safefree(bigint);
 }
 
@@ -314,13 +323,17 @@ static wec_bigint sv_bigint(pTHX_ SV **sv,
         NEW_CLASS(result, value, class);
         if (!BN_copy(&result->num, &bigint->num))
             CRYPTO_CROAK("BN_copy error");
-        if (SENSITIVE) result->sensitive = bigint->sensitive;
+#if SENSITIVE
+        result->sensitive = bigint->sensitive;
+#endif /* SENSITIVE */
         *sv = value;
         return result;
     }
 
     Newx(bigint, 1, struct wec_bigint);
-    if (SENSITIVE) bigint->sensitive = 0;
+#if SENSITIVE
+    bigint->sensitive = 0;
+#endif /* SENSITIVE */
     big = &bigint->num;
     BN_init(big);
 
@@ -524,7 +537,9 @@ static void sv_typed_int(pTHX_ typed_int *typed, SV *value,
     }
 
     Newx(bigint, 1, struct wec_bigint);
-    if (SENSITIVE) bigint->sensitive = 0;
+#if SENSITIVE
+    bigint->sensitive = 0;
+#endif /* SENSITIVE */
     big = &bigint->num;
     BN_init(big);
 
@@ -618,11 +633,13 @@ static bool get_sensitive(pTHX_ SV *sensitive) {
     /* Try to guess when SvTRUE does no mg_get */
     need_magic = SvPOK(sensitive) || SvIOK(sensitive) || SvNOK(sensitive);
     if (SvTRUE(sensitive)) return 1;
+#if SENSITIVE
     if (need_magic) SvGETMAGIC(sensitive);
     /* Should also accept the other types with a sensitivity flag */
     bigsensitive = TRY_C_OBJECT(sensitive, PACKAGE_BASE "::BigInt");
     if (bigsensitive && bigsensitive->sensitive)
         croak("Turning sensitivity off using a sensitive value");
+#endif /* SENSITIVE */
     return 0;
 }
 
@@ -699,8 +716,11 @@ rand_prime(const char *class, ...)
     STRLEN len;
     wec_bigint result, modulus, remainder;
     IV callback_period;
-    int rc, safe, bits, sensitive;
+    int rc, safe, bits;
+#if SENSITIVE
+    int sensitive;
     bool sens;
+#endif /* SENSITIVE */
     PERL_CB perl_cb;
     BN_GENCB *gen_cb;
   PPCODE:
@@ -708,8 +728,11 @@ rand_prime(const char *class, ...)
     if (items % 2 == 0) croak("Odd number of arguments");
     bits = -1;
     callback_period = 0;
+#if SENSITIVE
     sens = 0;
-    safe = sensitive = -1;
+    sensitive = -1;
+#endif /* SENSITIVE */
+    safe = -1;
     modulus = remainder = NULL;
     callback = NULL;
     for (i=1; i<items; i+=2) {
@@ -762,7 +785,9 @@ rand_prime(const char *class, ...)
                 modulus = SV_BIGINT(value, "modulus");
                 /* Internals of generate don't work if modulus is negative */
                 if (BN_is_negative(&modulus->num)) croak("Negative modulus");
+#if SENSITIVE
                 sens |= modulus->sensitive;
+#endif /* SENSITIVE */
                 goto OK;
             }
             break;
@@ -772,7 +797,9 @@ rand_prime(const char *class, ...)
                 if (remainder) croak("Multiple remainder arguments");
                 remainder = SV_BIGINT(value, "remainder");
                 /* Negative remainders work just fine */
+#if SENSITIVE
                 sens |= remainder->sensitive;
+#endif /* SENSITIVE */
                 goto OK;
             }
             break;
@@ -782,11 +809,13 @@ rand_prime(const char *class, ...)
                 safe = SvTRUE(value) ? 1 : 0;
                 goto OK;
             }
-            if (SENSITIVE && LOW_EQ(name, len, "sensitive")) {
+#if SENSITIVE
+            if (LOW_EQ(name, len, "sensitive")) {
                 if (sensitive >= 0) croak("Multiple sensitive arguments");
                 sensitive = GET_SENSITIVE(value);
                 goto OK;
             }
+#endif /* SENSITIVE */
             break;
         }
         croak("Unknown option '%"SVf"'", ST(i));
@@ -801,7 +830,9 @@ rand_prime(const char *class, ...)
     gen_cb = callback ?
         perl_callback(aTHX_ &perl_cb, callback, callback_period) : NULL;
     NEW_CLASS(result, object, class);
-    if (SENSITIVE) result->sensitive = sensitive >= 0 ? sensitive : sens;
+#if SENSITIVE
+    result->sensitive = sensitive >= 0 ? sensitive : sens;
+#endif /* SENSITIVE */
     PUSHs(object);
     PUTBACK;
     rc = BN_generate_prime_ex(&result->num, bits, safe,
@@ -967,7 +998,9 @@ from_decimal(const char *class, SV *decimal_string, SV *sensitive=NULL)
         C_DECIMAL(decimal_string, "Decimal string");
     is_sensitive = GET_SENSITIVE(sensitive);
     NEW_CLASS(bigint, object, class);
-    if (SENSITIVE) bigint->sensitive = is_sensitive;
+#if SENSITIVE
+    bigint->sensitive = is_sensitive;
+#endif /* SENSITIVE */
     big = &bigint->num;
     if (ix) {
         if (!BN_hex2bn(&big, string))
@@ -1025,7 +1058,9 @@ to_decimal(SV *arg, SV *dummy=NULL, SV *how=NULL)
     }
     RETVAL = newSVpv(string, 0);
   done:;
-    if (SENSITIVE && bigint->sensitive) Zero(string, SvCUR(RETVAL), char);
+#if SENSITIVE
+    if (bigint->sensitive) Zero(string, SvCUR(RETVAL), char);
+#endif /* SENSITIVE */
     OPENSSL_free(string);
   OUTPUT:
     RETVAL
@@ -1046,7 +1081,9 @@ from_bin(const char *class, SV *bin_string, SV *sensitive = NULL)
     if (len > INT_MAX) croak("string length out of range");
     is_sensitive = GET_SENSITIVE(sensitive);
     NEW_CLASS(bigint, object, class);
-    if (SENSITIVE) bigint->sensitive = is_sensitive;
+#if SENSITIVE
+    bigint->sensitive = is_sensitive;
+#endif /* SENSITIVE */
     if (ix) {
         if (!BN_mpi2bn(string, (int) len, &bigint->num))
             CRYPTO_CROAK("Could not convert mpi string");
@@ -1279,7 +1316,9 @@ lshift1(SV *from, SV *dummy=NULL, SV *how=NULL)
     else {
         value = SV_BIGINT(from, "argument");
         NEW_BIGINT(result, from);
-        if (SENSITIVE) result->sensitive = value->sensitive;
+#if SENSITIVE
+        result->sensitive = value->sensitive;
+#endif /* SENSITIVE */
     }
     if (ix) {
         int rc;
@@ -1330,7 +1369,9 @@ square(SV *from, SV *dummy=NULL, SV *how=NULL)
     } else {
         bigint = SV_BIGINT(from, "argument");
         NEW_BIGINT(result, from);
-        if (SENSITIVE) result->sensitive = bigint->sensitive;
+#if SENSITIVE
+        result->sensitive = bigint->sensitive;
+#endif /* SENSITIVE */
         ctx = BN_CTX_new();
         if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
         rc = BN_sqr(&result->num, &bigint->num, ctx);
@@ -1404,17 +1445,15 @@ bit(SV *arg, SV *bit_nr, SV *value=NULL)
                 goto do_fix;
             }
         }
-        if (SENSITIVE) {
-            result->sensitive |= typed.bigint->sensitive;
-            if (!result->sensitive) {
-                if (need_magic) SvGETMAGIC(value);
-                /* Also accept the other types with a sensitivity flag ? */
-                bigsensitive =
-                    TRY_C_OBJECT(value, PACKAGE_BASE "::BigInt");
-                if (bigsensitive)
-                    result->sensitive = bigsensitive->sensitive;
-            }
+#if SENSITIVE
+        result->sensitive |= typed.bigint->sensitive;
+        if (!result->sensitive) {
+            if (need_magic) SvGETMAGIC(value);
+            /* Also accept the other types with a sensitivity flag ? */
+            bigsensitive = TRY_C_OBJECT(value, PACKAGE_BASE "::BigInt");
+            if (bigsensitive) result->sensitive = bigsensitive->sensitive;
         }
+#endif /* SENSITIVE */
     }
   do_fix:
     if (fixup) {
@@ -1464,7 +1503,9 @@ mask_bits(SV *arg, SV *nr_bits, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg, "arg");
         NEW_BIGINT(result, arg);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
     PUSHs(arg);
 
@@ -1504,7 +1545,9 @@ mask_bits(SV *arg, SV *nr_bits, SV *how=NULL)
         error = "Could not copy";
         goto do_fix;
     }
-    if (SENSITIVE) result->sensitive |= typed.bigint->sensitive;
+#if SENSITIVE
+    result->sensitive |= typed.bigint->sensitive;
+#endif /* SENSITIVE */
     if (fixup) {
         int i, top;
         top = ((int) typed.ival + BN_BITS2-1) / BN_BITS2;
@@ -1569,7 +1612,9 @@ copy_sign(SV *arg1, SV *arg2, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
     switch(typed.flags) {
       case HAS_POSITIVE_INT:
@@ -1596,7 +1641,9 @@ copy_sign(SV *arg1, SV *arg2, SV *how=NULL)
         BN_set_negative(&result->num, BN_is_negative(&typed.bigint->num));
         break;
     }
-    if (SENSITIVE) result->sensitive |= typed.bigint->sensitive;
+#if SENSITIVE
+    result->sensitive |= typed.bigint->sensitive;
+#endif /* SENSITIVE */
     XPUSHs(arg1);
 
 int
@@ -1630,7 +1677,9 @@ lshift(SV *arg1, SV *arg2, SV *how=NULL)
     else {
         value = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = value->sensitive;
+#if SENSITIVE
+        result->sensitive = value->sensitive;
+#endif /* SENSITIVE */
     }
 
     if (ix) distance = -distance;
@@ -1664,7 +1713,9 @@ lshift(SV *arg1, SV *arg2, SV *how=NULL)
         BN_rshift1(&result->num, &value->num) :
         BN_rshift(&result->num, &value->num, -(int) distance);
     if (rc != 1) CRYPTO_CROAK("Shift error");
-    if (SENSITIVE) result->sensitive |= sensitive;
+#if SENSITIVE
+    result->sensitive |= sensitive;
+#endif /* SENSITIVE */
     PUSHs(arg1);
 
 void
@@ -1680,7 +1731,9 @@ clear(SV *arg)
     if (!address) croak("arg object has a NULL pointer");
     result = INT2PTR(wec_bigint, address);
     BN_clear(&result->num);
-    if (SENSITIVE) result->sensitive = 0;
+#if SENSITIVE
+    result->sensitive = 0;
+#endif /* SENSITIVE */
     if (PL_tainting) {
         sv_untaint(bigint);
         sv_untaint(arg);
@@ -1691,10 +1744,13 @@ sensitive(SV *arg, SV *sensitive=NULL)
   PREINIT:
     wec_bigint bigint;
   PPCODE:
-    if (!SENSITIVE) croak("Sensitivity not supported");
+#if SENSITIVE
     bigint = C_OBJECT(arg, PACKAGE_BASE "::BigInt", "arg");
     PUSHs(bigint->sensitive ? &PL_sv_yes : &PL_sv_no);
     if (sensitive) bigint->sensitive = GET_SENSITIVE(sensitive);
+#else  /* SENSITIVE */
+    croak("Sensitivity not supported");
+#endif /* SENSITIVE */
 
 void
 taint(SV *arg, SV *taint=NULL)
@@ -1711,7 +1767,9 @@ copy(SV *arg, SV *dummy=NULL, SV *how=NULL)
     TAINT_NOT;
     SV_TYPEDINT(typed, arg, "arg");
     NEW_BIGINT(result, object);
-    if (SENSITIVE) result->sensitive = typed.bigint->sensitive;
+#if SENSITIVE
+    result->sensitive = typed.bigint->sensitive;
+#endif /* SENSITIVE */
     switch(typed.flags) {
       case HAS_POSITIVE_INT:
         if (!BN_set_word(&result->num, typed.ival))
@@ -1751,7 +1809,9 @@ add(SV *arg1, SV *arg2, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
 
     switch(typed.flags) {
@@ -1786,7 +1846,9 @@ add(SV *arg1, SV *arg2, SV *how=NULL)
             CRYPTO_CROAK("BN_lshift1 error");
         break;
     }
-    if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+    result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
     PUSHs(arg1);
 
 void
@@ -1815,7 +1877,9 @@ subtract(SV *arg1, SV *arg2, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
 
     switch(typed.flags) {
@@ -1855,7 +1919,9 @@ subtract(SV *arg1, SV *arg2, SV *how=NULL)
         if (!BN_zero(&result->num)) CRYPTO_CROAK("BN_zero error");
         break;
     }
-    if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+    result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
     PUSHs(arg1);
 
 void
@@ -1882,7 +1948,9 @@ multiply(SV *arg1, SV *arg2, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
 
     switch(typed.flags) {
@@ -1911,7 +1979,9 @@ multiply(SV *arg1, SV *arg2, SV *how=NULL)
         if (!rc) CRYPTO_CROAK("BN_sqr error");
         break;
     }
-    if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+    result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
     PUSHs(arg1);
 
 void
@@ -1972,7 +2042,9 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
     PUSHs(arg1);
 
@@ -1984,7 +2056,9 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
         if (ix >= 3) {
             rest = BN_mod_word(&a->num, typed.ival);
             if (rest == BN_MASK2) CRYPTO_CROAK("BN_mod_word error");
-            if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+            result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
             switch(ix) {
               case 3:	/* remainder */
                 /* Take care to check the sign of a before setting result
@@ -2015,13 +2089,17 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
                 CRYPTO_CROAK("BN_copy error");
             rest = BN_div_word(&result->num, typed.ival);
             if (rest == BN_MASK2) CRYPTO_CROAK("BN_div_word error");
-            if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+            result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
             if (typed.flags == HAS_NEGATIVE_INT)
                 BN_set_negative(&result->num, !negate);
             if (ix == 0) {	/* divide */
                 NEW_BIGINT(r, remainder);
                 PUSHs(remainder);
-                if (SENSITIVE) r->sensitive = result->sensitive;
+#if SENSITIVE
+                r->sensitive = result->sensitive;
+#endif /* SENSITIVE */
                 if (!BN_set_word(&r->num, rest))
                     CRYPTO_CROAK("BN_set_word error");
                 if (negate) BN_set_negative(&r->num, 1);
@@ -2070,8 +2148,9 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
                 NEW_BIGINT(r, remainder);
                 PUSHs(remainder);
                 rc = BN_div(&result->num, &r->num, &a->num, &b->num, ctx);
-                if (SENSITIVE && rc)
-                    r->sensitive = result->sensitive | b->sensitive;
+#if SENSITIVE
+                if (rc) r->sensitive = result->sensitive | b->sensitive;
+#endif /* SENSITIVE */
                 break;
               case 1:	/* perl_divide */
                 remainder = sv_newmortal();
@@ -2080,8 +2159,9 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
                 rc = BN_div(&result->num, &rb, &a->num, &b->num, ctx);
                 if (rc) {
                     SV_SET_FROM_BIGINT(remainder, &rb, 0);
-                    if (SENSITIVE && (a->sensitive || b->sensitive))
-                        BN_clear(&rb);
+#if SENSITIVE
+                    if (a->sensitive || b->sensitive) BN_clear(&rb);
+#endif /* SENSITIVE */
                     BN_free(&rb);
                 }
                 break;
@@ -2091,7 +2171,9 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
             }
             BN_CTX_free(ctx);
             if (!rc) CRYPTO_CROAK("Divide error");
-            if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+            result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
             break;
         }
         /* fall through */
@@ -2102,7 +2184,9 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
             if (!BN_one(&result->num)) CRYPTO_CROAK("BN_one error");
             NEW_BIGINT(r, remainder);
             PUSHs(remainder);
-            if (SENSITIVE) r->sensitive = result->sensitive;
+#if SENSITIVE
+            r->sensitive = result->sensitive;
+#endif /* SENSITIVE */
             if (!BN_zero(&r->num)) CRYPTO_CROAK("BN_zero error");
             break;
           case 1:	/* perl_divide */
@@ -2216,7 +2300,9 @@ perl_modulo(SV *arg1, SV *arg2, SV *how=NULL)
                 break;
             }
             SV_SET_FROM_BIGINT(arg1, &rb, 0);
-            if (SENSITIVE && (a->sensitive || b->sensitive)) BN_clear(&rb);
+#if SENSITIVE
+            if (a->sensitive || b->sensitive) BN_clear(&rb);
+#endif /* SENSITIVE */
             BN_free(&rb);
             BN_CTX_free(ctx);
             if (!rc) CRYPTO_CROAK("Divide error");
@@ -2258,12 +2344,16 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive;
+#endif /* SENSITIVE */
     }
 
     switch(typed.flags) {
       case HAS_POSITIVE_INT:
-        if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+        result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
         r = &result->num;
         exp = typed.ival;
         if (exp == 0) {
@@ -2284,7 +2374,9 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
         ctx = BN_CTX_new();
         if (!ctx) {
             if (needs_v) {
-                if (SENSITIVE && a->sensitive) BN_clear(&v);
+#if SENSITIVE
+                if (a->sensitive) BN_clear(&v);
+#endif /* SENSITIVE */
                 BN_free(&v);
             }
             CRYPTO_CROAK("BN_CTX_new error");
@@ -2293,7 +2385,9 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
             if (!BN_sqr(r, r, ctx)) {
                 BN_CTX_free(ctx);
                 if (needs_v) {
-                    if (SENSITIVE && a->sensitive) BN_clear(&v);
+#if SENSITIVE
+                    if (a->sensitive) BN_clear(&v);
+#endif /* SENSITIVE */
                     BN_free(&v);
                 }
                 CRYPTO_CROAK("BN_sqr error");
@@ -2301,7 +2395,9 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
             if ((rev_exp & 1) && !BN_mul(r, r, &v, ctx)) {
                 BN_CTX_free(ctx);
                 if (needs_v) {
-                    if (SENSITIVE && a->sensitive) BN_clear(&v);
+#if SENSITIVE
+                    if (a->sensitive) BN_clear(&v);
+#endif /* SENSITIVE */
                     BN_free(&v);
                 }
                 CRYPTO_CROAK("BN_mul error");
@@ -2310,7 +2406,9 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
         } while (--bits);
         BN_CTX_free(ctx);
         if (needs_v) {
-            if (SENSITIVE && a->sensitive) BN_clear(&v);
+#if SENSITIVE
+            if (a->sensitive) BN_clear(&v);
+#endif /* SENSITIVE */
             BN_free(&v);
         }
         break;
@@ -2327,7 +2425,9 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
         rc = BN_exp(&result->num, &a->num, &b->num, ctx);
         BN_CTX_free(ctx);
         if (!rc) CRYPTO_CROAK("BN_exp error");
-        if (SENSITIVE) result->sensitive |= b->sensitive;
+#if SENSITIVE
+        result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
         break;
     }
     PUSHs(arg1);
@@ -2371,7 +2471,9 @@ gcd(SV *arg1, SV *arg2, SV *how=NULL)
     }
     BN_CTX_free(ctx);
     if (!rc) CRYPTO_CROAK(ix ? "BN_mod_inverse error" : "BN_gcd error");
-    if (SENSITIVE) result->sensitive = a->sensitive | b->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | b->sensitive;
+#endif /* SENSITIVE */
     PUSHs(arg1);
 
 void
@@ -2394,8 +2496,9 @@ mod_multiply(SV *arg1, SV *arg2, SV *arg3)
     a = arg1 == arg2 ? b : SV_BIGINT(arg1, "arg1");
     m = SV_BIGINT(arg3, "arg3");
     NEW_BIGINT(result, object);
-    if (SENSITIVE)
-        result->sensitive = a->sensitive | b->sensitive | m->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | b->sensitive | m->sensitive;
+#endif /* SENSITIVE */
     switch(ix) {
       case 1:	/* mod_add */
         if (a == b) {
@@ -2403,19 +2506,25 @@ mod_multiply(SV *arg1, SV *arg2, SV *arg3)
 
             BN_init(&d);
             if (!BN_lshift1(&d, &a->num)) {
-                if (SENSITIVE && a->sensitive) BN_clear(&d);
+#if SENSITIVE
+                if (a->sensitive) BN_clear(&d);
+#endif /* SENSITIVE */
                 BN_free(&d);
                 CRYPTO_CROAK("BN_lshift1 error");
             }
             ctx = BN_CTX_new();
             if (!ctx) {
-                if (SENSITIVE && a->sensitive) BN_clear(&d);
+#if SENSITIVE
+                if (a->sensitive) BN_clear(&d);
+#endif /* SENSITIVE */
                 BN_free(&d);
                 CRYPTO_CROAK("BN_CTX_new error");
             }
             rc = BN_nnmod(&result->num, &d, &m->num, ctx);
             BN_CTX_free(ctx);
-            if (SENSITIVE && a->sensitive) BN_clear(&d);
+#if SENSITIVE
+            if (a->sensitive) BN_clear(&d);
+#endif /* SENSITIVE */
             BN_free(&d);
             if (!rc) CRYPTO_CROAK("BN_mod error");
             break;
@@ -2490,7 +2599,9 @@ mod_square(SV *arg1, SV *arg2, SV *how = NULL)
     NEW_BIGINT(result, object);
     ctx = BN_CTX_new();
     if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
-    if (SENSITIVE) result->sensitive = a->sensitive | m->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | m->sensitive;
+#endif /* SENSITIVE */
     rc = BN_mod_sqr(&result->num, &a->num, &m->num, ctx);
     BN_CTX_free(ctx);
     if (!rc) CRYPTO_CROAK("BN_mod_sqr error");
@@ -2511,7 +2622,9 @@ negate(SV *from, SV *dummy=NULL, SV *how=NULL)
         NEW_BIGINT(result, from);
         if (!BN_copy(&result->num, &bigint->num))
             CRYPTO_CROAK("BN_copy error");
-        if (SENSITIVE) result->sensitive = bigint->sensitive;
+#if SENSITIVE
+        result->sensitive = bigint->sensitive;
+#endif /* SENSITIVE */
     }
     if (BN_is_zero(&result->num)) {
         /* work around bugs for 0 */
@@ -2563,7 +2676,9 @@ int(SV *arg, SV *dummy=NULL, SV *how=NULL)
                 CRYPTO_CROAK("BN_copy error");
             break;
         }
-        if (SENSITIVE) result->sensitive = typed.bigint->sensitive;
+#if SENSITIVE
+        result->sensitive = typed.bigint->sensitive;
+#endif /* SENSITIVE */
     }
 
     switch(ix) {
@@ -2653,11 +2768,15 @@ and(SV *arg1, SV *arg2, SV *how=NULL)
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a &= $val */
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (SENSITIVE) a->sensitive |= b->sensitive;
+#if SENSITIVE
+        a->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
-        if (SENSITIVE) result->sensitive = a->sensitive | b->sensitive;
+#if SENSITIVE
+        result->sensitive = a->sensitive | b->sensitive;
+#endif /* SENSITIVE */
     }
     len_a = BN_num_bytes(&a->num);
     if (len_a == 0) {
@@ -2744,7 +2863,9 @@ and(SV *arg1, SV *arg2, SV *how=NULL)
                 len_a--;
             }
             bn = BN_bin2bn(buf_a, len_a, &result->num);
-            if (SENSITIVE && result->sensitive) Zero(buf, len, U8);
+#if SENSITIVE
+            if (result->sensitive) Zero(buf, len, U8);
+#endif /* SENSITIVE */
             Safefree(buf);
             if (!bn) CRYPTO_CROAK("BN_bin2bn error");
             if (negative) BN_set_negative(&result->num, 1);
@@ -2765,7 +2886,9 @@ rand(SV *arg)
     bigint = SV_BIGINT(arg, "arg");
     NEW_BIGINT(result, object);
     if (!BN_is_zero(&bigint->num) && !RAND_status()) SvTAINTED_on(object);
-    if (SENSITIVE) result->sensitive = bigint->sensitive;
+#if SENSITIVE
+    result->sensitive = bigint->sensitive;
+#endif /* SENSITIVE */
     rc = ix ?
         BN_pseudo_rand_range(&result->num, &bigint->num) :
         BN_rand_range(       &result->num, &bigint->num);
@@ -2820,13 +2943,15 @@ rand_bits(const char *class, ...)
                 goto OK;
             }
             break;
+#if SENSITIVE
           case 's': case 'S':
-            if (SENSITIVE && LOW_EQ(name, len, "sensitive")) {
+            if (LOW_EQ(name, len, "sensitive")) {
                 if (sensitive >= 0) croak("Multiple sensitive arguments");
                 sensitive = GET_SENSITIVE(value);
                 goto OK;
             }
             break;
+#endif /* SENSITIVE */
         }
         croak("Unknown option '%"SVf"'", ST(i));
       OK:;
@@ -2840,7 +2965,9 @@ rand_bits(const char *class, ...)
     if (lsb > bits) croak("More lsb_ones than bits");
     if (lsb > 1)    croak("More than 1 lsb_ones is unsupported");
     NEW_CLASS(result, object, class);
-    if (SENSITIVE) result->sensitive = sensitive >= 0 ? sensitive : sens;
+#if SENSITIVE
+    result->sensitive = sensitive >= 0 ? sensitive : sens;
+#endif /* SENSITIVE */
     if (bits && !RAND_status()) SvTAINTED_on(object);
     rc = ix ?
         BN_pseudo_rand(&result->num, bits, msb-1, lsb) :
@@ -2867,8 +2994,11 @@ DESTROY(SV *arg)
     wec_bigint bigint;
   PPCODE:
     bigint = C_OBJECT(arg, PACKAGE_BASE "::BigInt", "arg");
-    if (SENSITIVE && bigint->sensitive) BN_clear_free(&bigint->num);
-    else BN_free(&bigint->num);
+#if SENSITIVE
+    if (bigint->sensitive) BN_clear_free(&bigint->num);
+    else
+#endif /* SENSITIVE */
+    BN_free(&bigint->num);
     Safefree(bigint);
 
 MODULE = WEC::SSL::BigInt		PACKAGE = WEC::SSL::Reciprocal
@@ -2891,7 +3021,9 @@ new(SV *class, SV *m)
     object = sv_newmortal();
     sv_setref_pv(object, class_name, (void*) reciprocal);
     SvTAINT(object);
-    if (SENSITIVE) reciprocal->sensitive = bigint->sensitive;
+#if SENSITIVE
+    reciprocal->sensitive = bigint->sensitive;
+#endif /* SENSITIVE */
     /* As far as I can determine, the ctx argument is completely unused.
        Sabotage it */
     if (!BN_RECP_CTX_set(&reciprocal->ctx, &bigint->num, (BN_CTX *) -1L))
@@ -2904,10 +3036,13 @@ sensitive(SV *arg, SV *sensitive=NULL)
   PREINIT:
     wec_reciprocal reciprocal;
   PPCODE:
-    if (!SENSITIVE) croak("Sensitivity not supported");
+#if SENSITIVE
     reciprocal = C_OBJECT(arg, PACKAGE_BASE "::Reciprocal", "arg");
     PUSHs(reciprocal->sensitive ? &PL_sv_yes : &PL_sv_no);
     if (sensitive) reciprocal->sensitive = GET_SENSITIVE(sensitive);
+#else  /* SENSITIVE */
+    croak("Sensitivity not supported");
+#endif /* SENSITIVE */
 
 void
 taint(SV *arg, SV *taint=NULL)
@@ -2928,8 +3063,9 @@ mod_multiply(SV *arg0, SV *arg1, SV *arg2)
     b = SV_BIGINT(arg2, "arg2");
     reciprocal = C_OBJECT(arg0, PACKAGE_BASE "::Reciprocal", "arg0");
     NEW_BIGINT(result, object);
-    if (SENSITIVE) result->sensitive =
-        a->sensitive | b->sensitive | reciprocal->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | b->sensitive | reciprocal->sensitive;
+#endif /* SENSITIVE */
     ctx = BN_CTX_new();
     if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
     rc = BN_mod_mul_reciprocal(&result->num, &a->num, &b->num,
@@ -2958,13 +3094,17 @@ divide(SV *arg0, SV *arg)
 
     NEW_BIGINT(big_q, object_q);
     PUSHs(object_q);
-    if (SENSITIVE) big_q->sensitive = a->sensitive | reciprocal->sensitive;
+#if SENSITIVE
+    big_q->sensitive = a->sensitive | reciprocal->sensitive;
+#endif /* SENSITIVE */
 
     if (gimme == G_ARRAY) {
         NEW_BIGINT(big_r, object_r);
         r = &big_r->num;
         PUSHs(object_r);
-        if (SENSITIVE) big_r->sensitive = big_q->sensitive;
+#if SENSITIVE
+        big_r->sensitive = big_q->sensitive;
+#endif /* SENSITIVE */
     } else r = NULL;
 
     ctx = BN_CTX_new();
@@ -2989,7 +3129,9 @@ quotient(SV *arg0, SV *arg)
     reciprocal = C_OBJECT(arg0, PACKAGE_BASE "::Reciprocal", "arg0");
 
     NEW_BIGINT(result, object);
-    if (SENSITIVE) result->sensitive = a->sensitive | reciprocal->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | reciprocal->sensitive;
+#endif /* SENSITIVE */
 
     ctx = BN_CTX_new();
     if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
@@ -3004,12 +3146,14 @@ quotient(SV *arg0, SV *arg)
 void
 DESTROY(wec_reciprocal reciprocal)
   PPCODE:
+#if SENSITIVE
     if (reciprocal->sensitive) {
 	BN_clear(&reciprocal->ctx.N);
 	BN_clear(&reciprocal->ctx.Nr);
         reciprocal->ctx.num_bits = 0;
         reciprocal->ctx.shift    = 0;
     }
+#endif /* SENSITIVE */
     BN_RECP_CTX_free(&reciprocal->ctx);
     Safefree(reciprocal);
 
@@ -3036,7 +3180,9 @@ new(SV *class, SV *m)
     object = sv_newmortal();
     sv_setref_pv(object, class_name, (void*) montgomery);
     SvTAINT(object);
-    if (SENSITIVE) montgomery->sensitive = bigint->sensitive;
+#if SENSITIVE
+    montgomery->sensitive = bigint->sensitive;
+#endif /* SENSITIVE */
 
     ctx = BN_CTX_new();
     if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
@@ -3051,10 +3197,13 @@ sensitive(SV *arg, SV *sensitive=NULL)
   PREINIT:
     wec_montgomery montgomery;
   PPCODE:
-    if (!SENSITIVE) croak("Sensitivity not supported");
+#if SENSITIVE
     montgomery = C_OBJECT(arg, PACKAGE_BASE "::Montgomery", "arg");
     PUSHs(montgomery->sensitive ? &PL_sv_yes : &PL_sv_no);
     if (sensitive) montgomery->sensitive = GET_SENSITIVE(sensitive);
+#else  /* SENSITIVE */
+    croak("Sensitivity not supported");
+#endif /* SENSITIVE */
 
 void
 taint(SV *arg, SV *taint=NULL)
@@ -3075,8 +3224,9 @@ mod_multiply(SV *arg0, SV *arg1, SV *arg2)
     b = SV_BIGINT(arg2, "arg2");
     montgomery = C_OBJECT(arg0, PACKAGE_BASE "::Montgomery", "arg0");
     NEW_BIGINT(result, object);
-    if (SENSITIVE) result->sensitive =
-        a->sensitive | b->sensitive | montgomery->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | b->sensitive | montgomery->sensitive;
+#endif /* SENSITIVE */
     ctx = BN_CTX_new();
     if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
     rc = BN_mod_mul_montgomery(&result->num, &a->num, &b->num,
@@ -3102,7 +3252,9 @@ from(SV *arg0, SV *arg)
 
     NEW_BIGINT(result, object);
     PUSHs(object);
-    if (SENSITIVE) result->sensitive = a->sensitive | montgomery->sensitive;
+#if SENSITIVE
+    result->sensitive = a->sensitive | montgomery->sensitive;
+#endif /* SENSITIVE */
 
     ctx = BN_CTX_new();
     if (!ctx) CRYPTO_CROAK("BN_CTX_new error");
@@ -3128,7 +3280,9 @@ _R(SV *arg0)
 
     NEW_BIGINT(result, object);
     PUSHs(object);
-    if (SENSITIVE) result->sensitive = montgomery->sensitive;
+#if SENSITIVE
+    result->sensitive = montgomery->sensitive;
+#endif /* SENSITIVE */
     if (!BN_copy(&result->num, ix == 0 ? &montgomery->ctx.RR :
                  ix == 1 ? &montgomery->ctx.N :
                  &montgomery->ctx.Ni))
@@ -3137,6 +3291,7 @@ _R(SV *arg0)
 void
 DESTROY(wec_montgomery montgomery)
   PPCODE:
+#if SENSITIVE
     if (montgomery->sensitive) {
 	BN_clear(&montgomery->ctx.RR);
 	BN_clear(&montgomery->ctx.N);
@@ -3144,6 +3299,7 @@ DESTROY(wec_montgomery montgomery)
         montgomery->ctx.ri = 0;
         montgomery->ctx.n0 = 0;
     }
+#endif /* SENSITIVE */
     BN_MONT_CTX_free(&montgomery->ctx);
     Safefree(montgomery);
 

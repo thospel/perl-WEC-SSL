@@ -747,14 +747,20 @@ static void *c_object(pTHX_ SV *object, const char *class, const char *context)
     return INT2PTR(void *, address);
 }
 
-static int get_int(pTHX_ SV *value, bool *sensitive, const char *context) {
+static int get_int(pTHX_ SV *value, 
+#if SENSITIVE
+                   bool *sensitive,
+#endif /* SENSITIVE */
+                   const char *context) {
     wec_bigint bigint;
     NV nval;
 
     bigint = c_object(aTHX_ value, PACKAGE_BASE "::BigInt", NULL);
     if (bigint) {
         if (bigint->num.top == 0) {
-            if (SENSITIVE && bigint->sensitive && sensitive) *sensitive = 1;
+#if SENSITIVE
+            if (bigint->sensitive && sensitive) *sensitive = 1;
+#endif /* SENSITIVE */
             return 0;
         }
         if (bigint->num.top > 1) croak("%s out of range", context);
@@ -762,7 +768,9 @@ static int get_int(pTHX_ SV *value, bool *sensitive, const char *context) {
             croak("%s %.0"NVff" out of range", context,
                   BN_is_negative(&bigint->num) ?
                   -(NV) bigint->num.d[0] : (NV) bigint->num.d[0]);
-        if (SENSITIVE && bigint->sensitive && sensitive) *sensitive = 1;
+#if SENSITIVE
+        if (bigint->sensitive && sensitive) *sensitive = 1;
+#endif /* SENSITIVE */
         return BN_is_negative(&bigint->num) ?
             -(int) bigint->num.d[0] : (int) bigint->num.d[0];
     }
@@ -1007,13 +1015,13 @@ context(SV *class)
     PUSHs(object);
 
 void
-tainted(SV *arg, SV *tainted=NULL)
+taint(SV *arg, SV *taint=NULL)
   PPCODE:
     if (PL_tainting) {
         PUSHs(SvTAINTED(arg) ? &PL_sv_yes : &PL_sv_no);
-        if (tainted) {
+        if (taint) {
             TAINT_NOT;
-            if (SvTRUE(tainted)) sv_taint(arg);
+            if (SvTRUE(taint)) sv_taint(arg);
             else {
                 if (PL_tainted)
                     croak("Turning tainting off using a tainted value");
@@ -1021,7 +1029,7 @@ tainted(SV *arg, SV *tainted=NULL)
             }
         }
     } else {
-        if (SvTRUE(tainted)) croak("Can't taint in a non tainted perl");
+        if (SvTRUE(taint)) croak("Can't taint in a non tainted perl");
         PUSHs(&PL_sv_no);
     }
 
@@ -1036,6 +1044,27 @@ openssl_version()
     SvIOK_on(RETVAL);
     SvIsUV_on(RETVAL);
     SvUVX(RETVAL) = OPENSSL_VERSION_NUMBER;
+  OUTPUT:
+    RETVAL
+
+bool
+feature_sensitive()
+  CODE:
+    RETVAL = SENSITIVE;
+  OUTPUT:
+    RETVAL
+
+bool
+feature_magic()
+  CODE:
+    RETVAL = DO_MAGIC;
+  OUTPUT:
+    RETVAL
+
+bool
+feature_taint()
+  CODE:
+    RETVAL = 1;
   OUTPUT:
     RETVAL
 

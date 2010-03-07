@@ -7,10 +7,9 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { 
-    use_ok("WEC::SSL::BigInt");
-    use_ok("WEC::SSL::Rand");
-};
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
+use WEC::SSL::Rand;
 
 # Fake seeding the PRNG
 WEC::SSL::Rand::seed("1" x 1024);
@@ -35,8 +34,8 @@ $val = Big->rand_prime(bit_length => 256);
 isa_ok($val, "Big");
 is($val->bit_length, 256);
 ok($val->is_prime);
-ok(!$val->sensitive);
-ok(!$val->taint);
+ok(!$val->sensitive) if feature_sensitive();
+ok(!$val->taint) if feature_taint();
 
 $val = Big->rand_prime(bits => 256);
 isa_ok($val, "Big");
@@ -70,7 +69,7 @@ is($val->bit_length, 256);
 is(($val % 256)->to_decimal, 1);
 ok($val->is_prime);
 
-$val = Big->rand_prime(bits => 256, m => 256);
+$val = Big->rand_prime(bits => 256, "m" => 256);
 isa_ok($val, "Big");
 is($val->bit_length, 256);
 is(($val % 256)->to_decimal, 1);
@@ -130,87 +129,99 @@ is_deeply([sort keys %type], [0, 1, 2]);
 is_deeply([sort keys %nr_args], [2]);
 
 # Sensitivity propagation
-my $len = WEC::SSL::BigInt->new(256);
-$len->sensitive(1);
-$val = Big->rand_prime(bit_length => $len);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok($val->sensitive);
-ok(!$val->taint);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-eval { Big->rand_prime(bit_length => 256, sensitive => $len-$len) };
-like($@, qr/^Turning sensitivity off using a sensitive value at /i);
+    my $len = WEC::SSL::BigInt->new(256);
+    $len->sensitive(1);
+    $val = Big->rand_prime(bit_length => $len);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok($val->sensitive);
+    ok(!$val->taint) if feature_taint();
 
-$val = Big->rand_prime(bit_length => $len, sensitive => 0);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok(!$val->taint);
+    eval { Big->rand_prime(bit_length => 256, sensitive => $len-$len) };
+    like($@, qr/^Turning sensitivity off using a sensitive value at /i);
 
-$val = Big->rand_prime(bit_length => 256, modulus => $len);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok($val->sensitive);
-ok(!$val->taint);
+    $val = Big->rand_prime(bit_length => $len, sensitive => 0);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok(!$val->sensitive);
+    ok(!$val->taint) if feature_taint();
 
-$val = Big->rand_prime(bit_length => 256, modulus => 257, remainder => $len);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok($val->sensitive);
-ok(!$val->taint);
+    $val = Big->rand_prime(bit_length => 256, modulus => $len);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok($val->sensitive);
+    ok(!$val->taint) if feature_taint();
 
-$val = Big->rand_prime(bit_length => 256,
-                       callback_period => $len,
-                       callback => sub {});
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok(!$val->taint);
+    $val = Big->rand_prime(bit_length => 256, modulus => 257, remainder => $len);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok($val->sensitive);
+    ok(!$val->taint) if feature_taint();
+
+    $val = Big->rand_prime(bit_length => 256,
+                           callback_period => $len,
+                           callback => sub {});
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok(!$val->sensitive);
+    ok(!$val->taint) if feature_taint();
+}
 
 # Taint propagation
-$val = Big->rand_prime(bit_length => 256 . $taint);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok($val->taint);
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$val = Big->rand_prime(bit_length => 256, sensitive => $taint);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok($val->taint);
+    $val = Big->rand_prime(bit_length => 256 . $taint);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok(!$val->sensitive) if feature_sensitive();
+    ok($val->taint);
 
-$val = Big->rand_prime(bit_length => 256, modulus => 256 . $taint);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok($val->taint);
+  SKIP: {
+      skip "Compiled without sensitive support" if !feature_sensitive();
 
-$val = Big->rand_prime(bit_length => 256,
-                       modulus => 256,
-                       remainder => 1 . $taint);
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok($val->taint);
+      $val = Big->rand_prime(bit_length => 256, sensitive => $taint);
+      isa_ok($val, "Big");
+      is($val->bit_length, 256);
+      ok($val->is_prime);
+      ok(!$val->sensitive);
+      ok($val->taint);
+    }
 
-$val = Big->rand_prime(bit_length => 256,
-                       callback_period => 1 . $taint,
-                       callback => sub {});
-isa_ok($val, "Big");
-is($val->bit_length, 256);
-ok($val->is_prime);
-ok(!$val->sensitive);
-ok(!$val->taint);
+    $val = Big->rand_prime(bit_length => 256, modulus => 256 . $taint);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok(!$val->sensitive) if feature_sensitive();
+    ok($val->taint);
+
+    $val = Big->rand_prime(bit_length => 256,
+                           modulus => 256,
+                           remainder => 1 . $taint);
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok(!$val->sensitive) if feature_sensitive();
+    ok($val->taint);
+
+    $val = Big->rand_prime(bit_length => 256,
+                           callback_period => 1 . $taint,
+                           callback => sub {});
+    isa_ok($val, "Big");
+    is($val->bit_length, 256);
+    ok($val->is_prime);
+    ok(!$val->sensitive) if feature_sensitive();
+    ok(!$val->taint);
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

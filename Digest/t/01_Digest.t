@@ -6,4 +6,5 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL::Digest') };
+use WEC::SSL::Digest;
+pass("dummy");

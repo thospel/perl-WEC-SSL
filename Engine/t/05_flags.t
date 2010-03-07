@@ -7,7 +7,7 @@ BEGIN { $^W = 1 };
 use Test::More "no_plan";
 use Scalar::Util qw(tainted);
 
-BEGIN { use_ok('WEC::SSL::Engine') };
+use WEC::SSL::Engine;
 
 # Hopefully we have at least the dynamic engine available
 

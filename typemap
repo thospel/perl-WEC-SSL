@@ -108,7 +108,7 @@ T_PTROBJ_BIO_CHAIN
 	sv_setref_pv($arg, PACKAGE_BASE \"::BioChain\", (void*)$var);
 
 T_PTROBJ_SSL_CONTEXT
-	sv_setref_pv($arg, PACKAGE_BASE \"::Context\", (void*)$var);
+	sv_setref_pv($arg, PACKAGE_BASE \"::SSLContext\", (void*)$var);
 T_PTROBJ_SSL
 	sv_setref_pv($arg, \"WEC::SSL\", (void*)$var);
 

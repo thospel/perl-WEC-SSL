@@ -9,7 +9,7 @@ our $VERSION = "1.000";
 require WEC::SSL::Utils;
 
 use Exporter::Tidy
-    other => [qw(openssl_version)];
+    other => [qw(openssl_version feature_sensitive feature_taint feature_magic)];
 
 1;
 __END__
@@ -25,6 +25,10 @@ WEC::SSL - WEC::SSL frontent module
  my $version = openssl_version();
  print "Version string = '%s'\n", $version;
  print "Version number = %08X\n", $version;
+
+ $bool = feature_sensitive;
+ $bool = feature_taint;
+ $bool = feature_magic;
 
 =head1 DESCRIPTION
 
@@ -52,6 +56,21 @@ Numeric version identifier work as follows:
  * 0.9.3a	  0x0090301f
  * 0.9.4	  0x0090400f
  * 1.2.3z	  0x102031af
+
+=item $bool = feature_sensitive
+
+The code is compiled with C<sensitive> support. This means sensitive data is
+tracked and some toekn effort is made not to leak it.
+
+=item $bool = feature_taint
+
+The code is compiled with C<taint> support. See L<perlsec|perlsec> for more 
+details about taint mode.
+
+=item $bool = feature_magic
+
+The code is compiled with C<magic> support. This implies it works better with
+"strange" values like overloaded objects, tied values etc.
 
 =back
 

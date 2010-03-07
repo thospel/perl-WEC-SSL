@@ -7,10 +7,10 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN {
-    use_ok("WEC::SSL::BigInt");
-    use_ok("WEC::SSL::Rand");
-};
+use WEC::SSL qw(feature_sensitive feature_taint);
+    use WEC::SSL::BigInt;
+    use WEC::SSL::Rand;
+;
 
 # Fake seeding the PRNG
 WEC::SSL::Rand::seed("1" x 1024);
@@ -34,8 +34,8 @@ my ($val, $result);
 $result = Big->pseudo_rand_bits(bit_length => 0);
 is("$result", 0);
 isa_ok($result, "Big");
-ok(!$result->sensitive);
-ok(!$result->taint);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!$result->taint) if feature_taint();
 
 $result = eval { Big->pseudo_rand_bits(bit_length => -1) };
 like($@, qr/^Negative number of bits at /i);
@@ -142,72 +142,80 @@ for (6, 7) {
 }
 
 # Sensitivity
-$result = Big->pseudo_rand_bits(bit_length => 5, sensitive => 1);
-ok($result < 2**5);
-ok($result->sensitive);
-ok(!$result->taint);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$val = Big->new(5);
-$val->sensitive(1);
-$result = Big->pseudo_rand_bits(bit_length => $val);
-ok($result < 2**$val);
-ok($result->sensitive);
-ok(!$result->taint);
+    $result = Big->pseudo_rand_bits(bit_length => 5, sensitive => 1);
+    ok($result < 2**5);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
 
-$val = Big->new(1);
-$val->sensitive(1);
-$result = Big->pseudo_rand_bits(bit_length => 5, lsb_ones => $val);
-ok($result < 2**5);
-ok($result->sensitive);
-ok(!$result->taint);
+    $val = Big->new(5);
+    $val->sensitive(1);
+    $result = Big->pseudo_rand_bits(bit_length => $val);
+    ok($result < 2**$val);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
 
-$val = Big->new(1);
-$val->sensitive(1);
-$result = Big->pseudo_rand_bits(bit_length => 5, msb_ones => $val);
-ok($result < 2**5);
-ok($result->sensitive);
-ok(!$result->taint);
+    $val = Big->new(1);
+    $val->sensitive(1);
+    $result = Big->pseudo_rand_bits(bit_length => 5, lsb_ones => $val);
+    ok($result < 2**5);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
 
-$val = Big->new(1);
-$val->sensitive(1);
-$result = Big->pseudo_rand_bits(bit_length => 5, msb_ones => $val, sensitive => 0);
-ok($result < 2**5);
-ok(!$result->sensitive);
-ok(!$result->taint);
+    $val = Big->new(1);
+    $val->sensitive(1);
+    $result = Big->pseudo_rand_bits(bit_length => 5, msb_ones => $val);
+    ok($result < 2**5);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
 
-$val = Big->new(1);
-$val->sensitive(1);
-$result = Big->pseudo_rand_bits(bit_length => 5, sensitive => $val);
-ok($result < 2**5);
-ok($result->sensitive);
-ok(!$result->taint);
+    $val = Big->new(1);
+    $val->sensitive(1);
+    $result = Big->pseudo_rand_bits(bit_length => 5, msb_ones => $val, sensitive => 0);
+    ok($result < 2**5);
+    ok(!$result->sensitive);
+    ok(!$result->taint) if feature_taint();
 
-$val = Big->new(0);
-$val->sensitive(1);
-$result = eval { Big->pseudo_rand_bits(bit_length => 5, sensitive => $val) };
-like($@, qr/^Turning sensitivity off using a sensitive value at /);
+    $val = Big->new(1);
+    $val->sensitive(1);
+    $result = Big->pseudo_rand_bits(bit_length => 5, sensitive => $val);
+    ok($result < 2**5);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
+
+    $val = Big->new(0);
+    $val->sensitive(1);
+    $result = eval { Big->pseudo_rand_bits(bit_length => 5, sensitive => $val) };
+    like($@, qr/^Turning sensitivity off using a sensitive value at /);
+}
 
 # Tainted
-$val = Big->new(5);
-$val->taint(1);
-$result = Big->pseudo_rand_bits(bit_length => $val);
-ok($result < 2**$val);
-ok(!$result->sensitive);
-ok($result->taint);
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$val = Big->new(1);
-$val->taint(1);
-$result = Big->pseudo_rand_bits(bit_length => 5, lsb_ones => $val);
-ok($result < 2**5);
-ok(!$result->sensitive);
-ok($result->taint);
+    $val = Big->new(5);
+    $val->taint(1);
+    $result = Big->pseudo_rand_bits(bit_length => $val);
+    ok($result < 2**$val);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok($result->taint);
 
-$val = Big->new(1);
-$val->taint(1);
-$result = Big->pseudo_rand_bits(bit_length => 5, msb_ones => $val);
-ok($result < 2**5);
-ok(!$result->sensitive);
-ok($result->taint);
+    $val = Big->new(1);
+    $val->taint(1);
+    $result = Big->pseudo_rand_bits(bit_length => 5, lsb_ones => $val);
+    ok($result < 2**5);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok($result->taint);
+
+    $val = Big->new(1);
+    $val->taint(1);
+    $result = Big->pseudo_rand_bits(bit_length => 5, msb_ones => $val);
+    ok($result < 2**5);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok($result->taint);
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

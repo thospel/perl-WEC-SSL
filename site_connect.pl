@@ -9,6 +9,13 @@ use lib "$Bin/blib/lib", "$Bin/blib/arch";
 use IO::Socket::INET;
 use WEC::SSL;
 use WEC::SSL::BigInt;
+use WEC::SSL::Engine;
+use WEC::SSL::Encrypt;
+use WEC::SSL::Decrypt;
+use WEC::SSL::Digest;
+use WEC::SSL::Rand;
+use WEC::SSL::SSLContext;
+use WEC::SSL::Bio::Socket;
 
 my $host = shift || "www.amazon.com";
 my $socket = IO::Socket::INET->new(PeerAddr => $host,
@@ -21,17 +28,17 @@ eval {
     print STDERR "ENGINE_METHOD_RSA=", WEC::SSL::Engine::METHOD_RSA(), "\n";
     my $encrypt = WEC::SSL::Encrypt->new(cipher => "aes-256-cbc", 
                                          key => "fun");
-    print STDERR $encrypt->key_length, "\n";
-    print STDERR $encrypt->iv_length,  "\n";
-    print STDERR $encrypt->block_size, "\n";
-    print STDERR unpack("H*", my $c1 = $encrypt->update("a" x 42)), "\n";
-    print STDERR unpack("H*", my $c2 = $encrypt->finish), "\n";
+    print STDERR "key_length=", $encrypt->key_length, "\n";
+    print STDERR "iv_length=", $encrypt->iv_length,  "\n";
+    print STDERR "block_size=", $encrypt->block_size, "\n";
+    print STDERR "encrypt: ", unpack("H*", my $c1 = $encrypt->update("a" x 42)), "\n";
+    print STDERR "encrypt left: ", unpack("H*", my $c2 = $encrypt->finish), "\n";
 
     my $decrypt = WEC::SSL::Decrypt->new(cipher => "aes-256-cbc", 
                                          key => "fun");
-    print STDERR $decrypt->update($c1), "\n";
-    print STDERR $decrypt->update($c2), "\n";
-    print STDERR $decrypt->finish, "\n";
+    print STDERR "Decrypt: ", $decrypt->update($c1), "\n";
+    print STDERR "Decrypt: ", $decrypt->update($c2), "\n";
+    print STDERR "Decrypt rest: ", $decrypt->finish, "\n";
 
     my $hash = WEC::SSL::DigestContext->new(digest => "sha256");
     $hash->update("foo\n");
@@ -43,13 +50,13 @@ eval {
 
     my %engines;
     tie %engines, "WEC::SSL::EngineList";
-    my $aep = WEC::SSL::Engine->new("aep");
-    print STDERR "Engine id=", $aep->id, ", name=", $aep->name, "\n";
+    my $aep = WEC::SSL::Engine->by_name("aep");
+    print STDERR "Engine id=", $aep->name, ", name=", $aep->description, "\n";
     print STDERR "it Engine=$_\n" for keys %engines;
     print STDERR "Engine $_ exists: ", exists $engines{$_}, "\n" for "dynamic", "aep", "fun";
-    print STDERR "Ignore Error: $_\n" while $_ = WEC::SSL::error_line();
+    print STDERR "Ignore Error: $_\n" while $_ = WEC::SSL::Utils::_error_line();
 
-    my $dynamic = WEC::SSL::Engine->new("dynamic");
+    my $dynamic = WEC::SSL::Engine->by_name("dynamic");
     print STDERR "flags=", $dynamic->flags, "\n";
     $dynamic->for_RSA;
     print STDERR "flags=", $dynamic->flags, "\n";
@@ -112,8 +119,8 @@ eval {
     print "abs $zero = ", $zero->abs, "\n";
     $a = $a ** 21 x 3;
     print "a = $a\n";
-    die "";
-    exit;
+    #die "";
+    #exit;
 
     my $context = WEC::SSL::SSLContext->new(verification_directory => "/etc/ssl/certs");
     $context->add_verification_file("/home/ton/legian.PEM");
@@ -122,6 +129,7 @@ eval {
         $context->connect(read_bio => $socket_bio, write_bio => $socket_bio) };
     if ($@) {
         my $err = $@;
+print STDERR "err=$err,context=$context,socket_bio=$socket_bio";
         my ($x509, $depth, $code) = $context->verify_error;
         printf(STDERR "Depth %d, code=%s\nissuer=%s\nsubject=%s\n", 
                $depth, $code, $x509->issuer_string, $x509->subject_string);
@@ -135,5 +143,5 @@ eval {
     print "_=<$_>\n" while $_=$ssl->get(100);
 };
 print "Failed: $@" if $@;
-print "Error: $_\n" while $_ = WEC::SSL::error_line();
+print "Error: $_\n" while $_ = WEC::SSL::Utils::_error_line();
 print STDERR "Line ", __LINE__, "\n";

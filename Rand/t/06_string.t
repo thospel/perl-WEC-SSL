@@ -7,7 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL::Rand') };
+use WEC::SSL::Rand
+;
 
 my $taint = substr("$^X$0", 0, 0);
 

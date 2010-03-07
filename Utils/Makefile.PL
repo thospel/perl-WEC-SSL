@@ -76,6 +76,9 @@ WriteMakefile
      # OPTIMIZE		=> "-g",
      LIBS		=> ["-L$openssl_path -L$openssl_path/lib -L$openssl_path/out32dll $libs"],
      INC 		=> "-I ../include -I$openssl_path/include -I$openssl_path/inc32",
+     depend		=> {
+         '$(O_FILES)'	=> "../include/wec_ssl.h ../include/ppport.h",
+     },
      DEFINE		=> '', # e.g., '-DHAVE_SOMETHING'
      # OBJECT		=> '$(O_FILES)',
      $^O eq "MSWin32" ? (

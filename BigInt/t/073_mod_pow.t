@@ -7,7 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok("WEC::SSL::BigInt") };
+use WEC::SSL::BigInt;
+;
 
 {
     package Big;

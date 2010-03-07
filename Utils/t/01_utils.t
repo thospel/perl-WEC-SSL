@@ -6,8 +6,8 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL::Utils') };
-BEGIN { use_ok('WEC::SSL::BigInt') };
+use WEC::SSL::Utils;
+use WEC::SSL::BigInt;
 
 can_ok("WEC::SSL::Utils", "context");
 

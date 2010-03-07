@@ -6,4 +6,4 @@ use warnings;
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-BEGIN { use_ok('WEC::SSL') };
+use_ok('WEC::SSL') || BAIL_OUT("Cannot even use WEC::SSL");
