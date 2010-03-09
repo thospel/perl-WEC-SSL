@@ -394,7 +394,7 @@ static const EVP_CIPHER *cipher_by_name(pTHX_ SV *name) {
     }
 
     cipher_name = SvPV(name, len);
-    if (cipher_name[len]) 
+    if (cipher_name[len])
         croak("Assertion: cipher name is not \\0-terminated");
     if (memchr(cipher_name, 0, len)) croak("Engine name contains \\0");
     /* No need for an unicode check, all valid names are pure ASCII */
@@ -415,7 +415,7 @@ static const EVP_MD *digest_by_name(pTHX_ SV *name) {
     }
 
     digest_name = SvPV(name, len);
-    if (digest_name[len]) 
+    if (digest_name[len])
         croak("Assertion: digest name is not \\0-terminated");
     if (memchr(digest_name, 0, len)) croak("Digest name contains \\0");
     /* No need for an unicode check, all valid names are pure ASCII */
@@ -440,7 +440,7 @@ static ENGINE *engine_by_name(pTHX_ SV *name) {
 
     load_engines();
     engine_name = SvPV(name, len);
-    if (engine_name[len]) 
+    if (engine_name[len])
         croak("Assertion: engine name is not \\0-terminated");
     if (memchr(engine_name, 0, len)) croak("Engine name contains \\0");
     /* No need for an unicode check, all valid names are pure ASCII */
@@ -702,7 +702,7 @@ static bool my_isa_lookup(pTHX_ HV *stash, const char *name, HV* name_stash,
 }
 
 /* Caller is responsible for doing SvGETMAGIC(object) */
-static void *c_sv(pTHX_ SV *object, const char *class, const char *context) {
+static SV *c_sv(pTHX_ SV *object, const char *class, const char *context) {
     SV *sv;
     HV *stash, *class_stash;
 
@@ -747,7 +747,7 @@ static void *c_object(pTHX_ SV *object, const char *class, const char *context)
     return INT2PTR(void *, address);
 }
 
-static int get_int(pTHX_ SV *value, 
+static int get_int(pTHX_ SV *value,
 #if SENSITIVE
                    bool *sensitive,
 #endif /* SENSITIVE */
@@ -915,7 +915,7 @@ static UV get_UV(pTHX_ SV *value, const char *context) {
 /* Only taint the object, not the reference */
 #define HALF_TAINT 0
 
-static SV *ref_tainted(pTHX_ SV *arg, SV *tainted,
+static SV *ref_tainted(pTHX_ SV *arg, SV *taint,
                        const char *class, const char *context) {
     if (PL_tainting) {
         SV *object;
@@ -924,9 +924,9 @@ static SV *ref_tainted(pTHX_ SV *arg, SV *tainted,
         SvGETMAGIC(arg);
         object = c_sv(aTHX_ arg, class, context);
         was_tainted = SvTAINTED(object);
-        if (tainted) {
+        if (taint) {
             TAINT_NOT;
-            if (SvTRUE(tainted)) {
+            if (SvTRUE(taint)) {
                 if (!was_tainted) sv_taint(object);
 #if !HALF_TAINT
                 sv_taint(arg);
@@ -942,7 +942,7 @@ static SV *ref_tainted(pTHX_ SV *arg, SV *tainted,
         }
         return was_tainted ? &PL_sv_yes : &PL_sv_no;
     } else {
-        if (SvTRUE(tainted)) croak("Can't taint in a non tainted perl");
+        if (SvTRUE(taint)) croak("Can't taint in a non tainted perl");
         return &PL_sv_no;
     }
 }

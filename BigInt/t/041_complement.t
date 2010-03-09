@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -24,42 +24,26 @@ for my $method (@methods) {
 
 my ($arg, $tmp, $result);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # complement(-3) = 2
 $arg = Big->new(-3);
 
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", -3);
@@ -67,37 +51,45 @@ is("$arg", -3);
 $result = WEC::SSL::BigInt::complement(-3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 2);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", 2);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 2);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 2);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", 2);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", 2);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 2);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", 2);
+}
+
 # Check taint propagation
 $arg->taint(1);
 $result = WEC::SSL::BigInt::complement($arg);
@@ -122,18 +114,20 @@ $arg = Big->new(-2);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", -2);
@@ -141,54 +135,66 @@ is("$arg", -2);
 $result = WEC::SSL::BigInt::complement(-2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", 1);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", 1);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", 1);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", 1);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(-1) = 0
 $arg = Big->new(-1);
@@ -196,18 +202,20 @@ $arg = Big->new(-1);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", -1);
@@ -215,54 +223,66 @@ is("$arg", -1);
 $result = WEC::SSL::BigInt::complement(-1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", 0);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", 0);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", 0);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", 0);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(0) = -1
 $arg = Big->new(0);
@@ -270,18 +290,20 @@ $arg = Big->new(0);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 0);
@@ -289,54 +311,66 @@ is("$arg", 0);
 $result = WEC::SSL::BigInt::complement(0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -1);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -1);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -1);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -1);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(1) = -2
 $arg = Big->new(1);
@@ -344,18 +378,20 @@ $arg = Big->new(1);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 1);
@@ -363,54 +399,66 @@ is("$arg", 1);
 $result = WEC::SSL::BigInt::complement(1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -2);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -2);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -2);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -2);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -2);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -2);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -2);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -2);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -2);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -2);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -2);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -2);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -2);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(2) = -3
 $arg = Big->new(2);
@@ -418,18 +466,20 @@ $arg = Big->new(2);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 2);
@@ -437,54 +487,65 @@ is("$arg", 2);
 $result = WEC::SSL::BigInt::complement(2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -3);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -3);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -3);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -3);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -3);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -3);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -3);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -3);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -3);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -3);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -3);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -3);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(3) = -4
 $arg = Big->new(3);
@@ -492,18 +553,20 @@ $arg = Big->new(3);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -4);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -4);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -4);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 3);
@@ -511,54 +574,66 @@ is("$arg", 3);
 $result = WEC::SSL::BigInt::complement(3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -4);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -4);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -4);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -4);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -4);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -4);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -4);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -4);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -4);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -4);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -4);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -4);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -4);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -4);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -4);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(9) = -10
 $arg = Big->new(9);
@@ -566,18 +641,20 @@ $arg = Big->new(9);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -10);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -10);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -10);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 9);
@@ -585,54 +662,66 @@ is("$arg", 9);
 $result = WEC::SSL::BigInt::complement(9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -10);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -10);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -10);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -10);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -10);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -10);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -10);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -10);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -10);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -10);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -10);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -10);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -10);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -10);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -10);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(-9) = 8
 $arg = Big->new(-9);
@@ -640,18 +729,20 @@ $arg = Big->new(-9);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 8);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 8);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 8);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", -9);
@@ -659,54 +750,66 @@ is("$arg", -9);
 $result = WEC::SSL::BigInt::complement(-9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 8);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 8);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 8);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 8);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", 8);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 8);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 8);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", 8);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", 8);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 8);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", 8);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 8);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 8);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 8);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 8);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(12) = -13
 $arg = Big->new(12);
@@ -714,18 +817,20 @@ $arg = Big->new(12);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -13);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -13);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -13);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 12);
@@ -733,54 +838,66 @@ is("$arg", 12);
 $result = WEC::SSL::BigInt::complement(12);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -13);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -13);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -13);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -13);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -13);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -13);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -13);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -13);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -13);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -13);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -13);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -13);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -13);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -13);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -13);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(-12) = 11
 $arg = Big->new(-12);
@@ -788,18 +905,20 @@ $arg = Big->new(-12);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 11);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 11);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 11);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", -12);
@@ -807,54 +926,66 @@ is("$arg", -12);
 $result = WEC::SSL::BigInt::complement(-12);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 11);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 11);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 11);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 11);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", 11);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 11);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 11);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", 11);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", 11);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 11);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", 11);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 11);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 11);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 11);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 11);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(581) = -582
 $arg = Big->new(581);
@@ -862,18 +993,20 @@ $arg = Big->new(581);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -582);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -582);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -582);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", 581);
@@ -881,54 +1014,66 @@ is("$arg", 581);
 $result = WEC::SSL::BigInt::complement(581);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -582);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -582);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -582);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -582);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", -582);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -582);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -582);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", -582);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", -582);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -582);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", -582);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -582);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -582);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -582);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -582);
+    ok(!tainted($result));
+
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 # complement(-581) = 580
 $arg = Big->new(-581);
@@ -936,18 +1081,20 @@ $arg = Big->new(-581);
 $result = WEC::SSL::BigInt::complement($arg);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 580);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::complement($arg, undef, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 580);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg->copy;
 $result = WEC::SSL::BigInt::complement($tmp, undef, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 580);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg", -581);
@@ -955,55 +1102,66 @@ is("$arg", -581);
 $result = WEC::SSL::BigInt::complement(-581);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 580);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg->complement;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 580);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = ~ $arg;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 580);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 # Check sensitive propagation
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 580);
-ok($result->sensitive);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$result = ~ $arg;
-ok($result->sensitive);
-is("$result", 580);
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 580);
-ok(!$result->sensitive);
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 580);
+    ok($result->sensitive);
 
-$result = ~ $arg;
-ok(!$result->sensitive);
-is("$result", 580);
+    $result = ~ $arg;
+    ok($result->sensitive);
+    is("$result", 580);
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 580);
+    ok(!$result->sensitive);
+
+    $result = ~ $arg;
+    ok(!$result->sensitive);
+    is("$result", 580);
+}
+
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 580);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = ~ $arg;
-ok(tainted($result));
-$arg->taint(0);
-$result = WEC::SSL::BigInt::complement($arg);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 580);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 580);
+    ok(tainted($result));
 
-$result = ~ $arg;
-ok(!tainted($result));
+    $result = ~ $arg;
+    ok(tainted($result));
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::complement($arg);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 580);
+    ok(!tainted($result));
 
+    $result = ~ $arg;
+    ok(!tainted($result));
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

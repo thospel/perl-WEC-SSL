@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -27,58 +27,68 @@ my ($result, $tmp);
 $result = WEC::SSL::BigInt::copy(0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
-ok(!$result->taint);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!$result->taint) if feature_taint();
 
 $result = WEC::SSL::BigInt::copy(3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt::copy(-3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt::copy(~0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", ~0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $tmp = Big->new(-28);
 $result = WEC::SSL::BigInt::copy($tmp);
 is(ref($result), "WEC::SSL::BigInt");
 is("$result", -28);
-ok(!$result->sensitive);
-ok(!$result->taint);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!$result->taint) if feature_taint();
 
-$tmp->sensitive(1);
-$result = WEC::SSL::BigInt::copy($tmp);
-is(ref($result), "WEC::SSL::BigInt");
-is("$result", -28);
-ok($result->sensitive);
-ok(!$result->taint);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
 
-$tmp->taint(1);
-$result = WEC::SSL::BigInt::copy($tmp);
-is(ref($result), "WEC::SSL::BigInt");
-is("$result", -28);
-ok($result->sensitive);
-ok($result->taint);
+    $tmp = Big->new(-28);
+    $tmp->sensitive(1);
+    $result = WEC::SSL::BigInt::copy($tmp);
+    is(ref($result), "WEC::SSL::BigInt");
+    is("$result", -28);
+    ok($result->sensitive);
+    ok(!$result->taint) if feature_taint();
 
-$tmp->sensitive(0);
-$result = WEC::SSL::BigInt::copy($tmp);
-is(ref($result), "WEC::SSL::BigInt");
-is("$result", -28);
-ok(!$result->sensitive);
-ok($result->taint);
+    $tmp->sensitive(0);
+    $result = WEC::SSL::BigInt::copy($tmp);
+    is(ref($result), "WEC::SSL::BigInt");
+    is("$result", -28);
+    ok(!$result->sensitive);
+    ok(!$result->taint) if feature_taint();
+}
 
-$tmp->taint(0);
-$result = WEC::SSL::BigInt::copy($tmp);
-is(ref($result), "WEC::SSL::BigInt");
-is("$result", -28);
-ok(!$result->sensitive);
-ok(!$result->taint);
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
+
+    $tmp = Big->new(-28);
+    $tmp->taint(1);
+    $result = WEC::SSL::BigInt::copy($tmp);
+    is(ref($result), "WEC::SSL::BigInt");
+    is("$result", -28);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok($result->taint);
+
+    $tmp->taint(0);
+    $result = WEC::SSL::BigInt::copy($tmp);
+    is(ref($result), "WEC::SSL::BigInt");
+    is("$result", -28);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok(!$result->taint);
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

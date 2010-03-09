@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -68,16 +68,21 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, -3);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -3);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -3);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -3);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -3);
+}
 
 # Check taint propagation
 $arg->taint(1);
@@ -119,30 +124,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, -2);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -2);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -2);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -2);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -2);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -2);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -2);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -2);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -2);
+    ok(!tainted($result));
+}
 
 # to_integer(-1) = -1
 $arg = Big->new(-1);
@@ -170,30 +183,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, -1);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -1);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -1);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -1);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -1);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -1);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -1);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -1);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -1);
+    ok(!tainted($result));
+}
 
 # to_integer(0) = 0
 $arg = Big->new(0);
@@ -221,30 +242,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 0);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 0);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 0);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 0);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 0);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 0);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 0);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 0);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 0);
+    ok(!tainted($result));
+}
 
 # to_integer(1) = 1
 $arg = Big->new(1);
@@ -272,30 +301,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 1);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 1);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 1);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 1);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 1);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 1);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 1);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 1);
+    ok(!tainted($result));
+}
 
 # to_integer(2) = 2
 $arg = Big->new(2);
@@ -323,30 +360,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 2);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 2);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 2);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 2);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 2);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 2);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 2);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 2);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 2);
+    ok(!tainted($result));
+}
 
 # to_integer(3) = 3
 $arg = Big->new(3);
@@ -374,30 +419,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 3);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 3);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 3);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 3);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 3);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 3);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 3);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 3);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 3);
+    ok(!tainted($result));
+}
 
 # to_integer(9) = 9
 $arg = Big->new(9);
@@ -425,30 +478,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 9);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 9);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 9);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 9);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 9);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 9);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 9);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 9);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 9);
+    ok(!tainted($result));
+}
 
 # to_integer(-9) = -9
 $arg = Big->new(-9);
@@ -476,30 +537,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, -9);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -9);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -9);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -9);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -9);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -9);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -9);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -9);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -9);
+    ok(!tainted($result));
+}
 
 # to_integer(12) = 12
 $arg = Big->new(12);
@@ -527,30 +596,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 12);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 12);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 12);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 12);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 12);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 12);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 12);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 12);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 12);
+    ok(!tainted($result));
+}
 
 # to_integer(-12) = -12
 $arg = Big->new(-12);
@@ -578,30 +655,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, -12);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -12);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -12);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -12);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -12);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -12);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -12);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -12);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -12);
+    ok(!tainted($result));
+}
 
 # to_integer(581) = 581
 $arg = Big->new(581);
@@ -629,30 +714,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, 581);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 581);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 581);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 581);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 581);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 581);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, 581);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 581);
+    ok(tainted($result));
 
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, 581);
+    ok(!tainted($result));
+}
 
 # to_integer(-581) = -581
 $arg = Big->new(-581);
@@ -680,31 +773,38 @@ $result = $arg->to_integer;
 is(ref($result), "");
 is($result, -581);
 ok(!tainted($result));
-# Check operation under sensitivity
-$arg->sensitive(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -581);
 
-$arg->sensitive(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -581);
+# Check operation under sensitivity
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $arg->sensitive(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -581);
+
+    $arg->sensitive(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -581);
+}
 
 # Check taint propagation
-$arg->taint(1);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -581);
-ok(tainted($result));
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$arg->taint(0);
-$result = WEC::SSL::BigInt::to_integer($arg);
-is(ref($result), "");
-is($result, -581);
-ok(!tainted($result));
+    $arg->taint(1);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -581);
+    ok(tainted($result));
 
-
+    $arg->taint(0);
+    $result = WEC::SSL::BigInt::to_integer($arg);
+    is(ref($result), "");
+    is($result, -581);
+    ok(!tainted($result));
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

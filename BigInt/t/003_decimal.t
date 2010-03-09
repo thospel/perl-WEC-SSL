@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -32,7 +32,7 @@ ok($result->is_zero);
 ok(!$result->is_one);
 is($result->to_integer, 0);
 is($result->abs_to_integer, 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal("-0");
 is("$result", 0);
@@ -41,7 +41,7 @@ ok($result->is_zero);
 ok(!$result->is_one);
 is($result->to_integer, 0);
 is($result->abs_to_integer, 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal(1);
 is("$result", 1);
@@ -50,7 +50,7 @@ ok(!$result->is_zero);
 ok($result->is_one);
 is($result->to_integer, 1);
 is($result->abs_to_integer, 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal(3);
 is("$result", 3);
@@ -59,19 +59,19 @@ is($result->to_integer, 3);
 ok(!$result->is_zero);
 ok(!$result->is_one);
 is($result->abs_to_integer, 3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = Big->from_decimal(-3);
 isa_ok($result, "Big");
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -3);
 is($result->to_decimal, -3);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 is($result->to_integer, -3);
 is($result->abs_to_integer, 3);
 
 $result = WEC::SSL::BigInt->from_decimal("+3");
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 is("$result", 3);
 is($result->to_decimal, 3);
 is($result->to_integer, 3);
@@ -80,7 +80,7 @@ is($result->abs_to_integer, 3);
 my $big = WEC::SSL::BigInt->from_decimal("123456789" x 10);
 isa_ok($big, "WEC::SSL::BigInt");
 is("$big", "123456789" x 10);
-ok(!$big->sensitive);
+ok(!$big->sensitive) if feature_sensitive();
 is($big->to_decimal, "123456789" x 10);
 eval { $big->to_integer };
 ok($@ =~ /value out of range/i);
@@ -105,20 +105,20 @@ like($@, qr/^Decimal string is empty at /i);
 $result = WEC::SSL::BigInt->from_decimal("   1234");
 is("$result", 1234);
 is($result->to_decimal, 1234);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 is($result->to_integer, 1234);
 is($result->abs_to_integer, 1234);
 
 $result = WEC::SSL::BigInt->from_decimal("   -1234");
 is("$result", -1234);
 is($result->to_decimal, -1234);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 is($result->to_integer, -1234);
 is($result->abs_to_integer, 1234);
 
 my $copy = WEC::SSL::BigInt->from_decimal($result);
-ok(!$result->sensitive);
-ok(!$copy->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!$copy->sensitive) if feature_sensitive();
 is("$copy", -1234);
 is($copy->to_decimal, -1234);
 is("-" ^ $copy->to_decimal, "\x001234", "result is a string, not a number");
@@ -130,35 +130,39 @@ $result->abs_bit(0, 1);
 is("$result", -1235, "Succesfully changed original");
 is("$copy",   -1234, "Changing original does not change copy");
 
-$result->sensitive(1);
-ok($result->sensitive);
-$copy = WEC::SSL::BigInt->from_decimal($result);
-is("$copy",   -1235, "Copy has same value as original");
-ok($result->sensitive);
-ok(!$copy->sensitive);
-$result->abs_bit(0, 0);
-is("$result", -1234, "Succesfully changed original");
-is("$copy",   -1235, "Changing original does not change copy");
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+
+    $result->sensitive(1);
+    ok($result->sensitive);
+    $copy = WEC::SSL::BigInt->from_decimal($result);
+    is("$copy",   -1235, "Copy has same value as original");
+    ok($result->sensitive);
+    ok(!$copy->sensitive);
+    $result->abs_bit(0, 0);
+    is("$result", -1234, "Succesfully changed original");
+    is("$copy",   -1235, "Changing original does not change copy");
+}
 
 $result = WEC::SSL::BigInt->from_decimal("1234", 0);
 is("$result", 1234);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal("1234", undef);
 is("$result", 1234);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal("1234", 1);
 is("$result", 1234);
-ok($result->sensitive);
+ok($result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal("1234", "0");
 is("$result", 1234);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 
 $result = WEC::SSL::BigInt->from_decimal("1234", "00");
 is("$result", 1234);
-ok($result->sensitive);
+ok($result->sensitive) if feature_sensitive();
 
 my $taint = substr("$0$^X", 0, 0);
 my $arg = "1234" . $taint;
@@ -174,11 +178,16 @@ ok(tainted($r));
 $r = $result->abs_to_integer;
 ok(tainted($r));
 
-my $sensitive = "1" . $taint;
-$result = WEC::SSL::BigInt->from_decimal("1234", $sensitive);
-ok(tainted($result));
-ok($result->sensitive);
-is("$result", 1234);
+SKIP: {
+    skip "Compiled without sensitive support" if !feature_sensitive();
+    skip "Compiled without taint support" if !feature_taint();
+
+    my $sensitive = "1" . $taint;
+    $result = WEC::SSL::BigInt->from_decimal("1234", $sensitive);
+    ok(tainted($result));
+    ok($result->sensitive);
+    is("$result", 1234);
+}
 
 "WEC::SSL::BigInt"->import(qw(to_decimal to_integer abs_to_integer));
 can_ok(__PACKAGE__, qw(to_decimal to_integer abs_to_integer));

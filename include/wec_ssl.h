@@ -132,7 +132,7 @@ extern bool wec_ssl_ciphers_loaded;
 struct util {
     const char *api_version;
     void (*not_a_number)(pTHX_ SV *sv, const char *from, STRLEN len);
-    void *(*c_sv)(pTHX_ SV *object, const char *class,const char *context);
+    SV *(*c_sv)(pTHX_ SV *object, const char *class,const char *context);
     void *(*c_object)(pTHX_ SV *object, const char *class,const char *context);
     int (*get_int)(pTHX_ SV *value, 
 #if SENSITIVE

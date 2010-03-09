@@ -940,17 +940,14 @@ for (0..(feature_sensitive() ? 7 : -1)) {
 # Check taint propagation
 for (0..(feature_taint() ? 7 : -1)) {
     $arg1 = Big->new(-1);
-    # Next dummy line somehow causes the argument not to be tainted
-    # ANY statement here seems to work
-    my $dummy;
-    $arg1->taint($_ & 1);
-    $arg2->taint($_ & 2);
-    $arg3->taint($_ & 4);
+    $arg1->taint($_ & 1 ? 1 : 0);
+    $arg2->taint($_ & 2 ? 1 : 0);
+    $arg3->taint($_ & 4 ? 1 : 0);
     $result = WEC::SSL::BigInt::bit($arg1, $arg2, $arg3);
     is(ref($result), "");
     is($result, 1);
-    ok(tainted($result) ^ !($_ & 3));
-    ok(tainted($arg1) ^ !$_);
+    ok(tainted($arg1) ^ !$_, "taint $_");
+    ok($arg1->taint ^ !$_, "taint $_");
 }
 
 # bit(0, -1) fails

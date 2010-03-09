@@ -3,9 +3,11 @@
 # `make test'. After `make install' it should work as `perl 001_constants.t'
 use strict;
 use warnings;
+use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
+use WEC::SSL qw(feature_sensitive feature_taint);
 use WEC::SSL::BigInt;
 
 my @methods = qw(is_zero is_one ZERO ONE);
@@ -27,14 +29,16 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok($result->is_zero);
 ok(!$result->is_one);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!tainted($result));
 
 $result = WEC::SSL::BigInt::ZERO;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
 ok($result->is_zero);
 ok(!$result->is_one);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!tainted($result));
 
 $result = Big->ONE;
 isa_ok($result, "Big");
@@ -42,14 +46,16 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->is_zero);
 ok($result->is_one);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!tainted($result));
 
 $result = WEC::SSL::BigInt::ONE;
 isa_ok($result, "WEC::SSL::BigInt");
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 is("$result", 1);
 ok(!$result->is_zero);
 ok($result->is_one);
+ok(!tainted($result));
 
 $result = Big->MAX_WORD;
 isa_ok($result, "Big");
@@ -57,14 +63,16 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", (($result/$result*2)**$result->bit_length-1)->to_decimal);
 ok(!$result->is_zero);
 ok(!$result->is_one);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
+ok(!tainted($result));
 
 $result = WEC::SSL::BigInt::MAX_WORD;
 isa_ok($result, "WEC::SSL::BigInt");
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 is("$result", (($result/$result*2)**$result->bit_length-1)->to_decimal);
 ok(!$result->is_zero);
 ok(!$result->is_one);
+ok(!tainted($result));
 
 $result = WEC::SSL::BigInt::PERL_MAX_WORD;
 is(ref($result), "");
@@ -73,6 +81,7 @@ ok($result != 0);
 ok($result != 1);
 ok($result <= ~0);
 ok($result <= WEC::SSL::BigInt::MAX_WORD);
+ok(!tainted($result));
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

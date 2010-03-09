@@ -1126,11 +1126,17 @@ is_one(SV *arg, SV *dummy=NULL, SV *how=NULL)
   PREINIT:
     typed_int typed;
   PPCODE:
+    TAINT_NOT;
     SV_TYPEDINT(typed, arg, "arg");
     if (typed.flags == HAS_BIGINT)
         arg = BN_is_one(&typed.bigint->num) ? &PL_sv_yes : &PL_sv_no;
     else
         arg = typed.ival == 1 && typed.flags == HAS_POSITIVE_INT ? &PL_sv_yes : &PL_sv_no;
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        arg = newSVsv(arg);
+        SvTAINTED_on(arg);
+    }
     PUSHs(arg);
 
 void
@@ -1138,11 +1144,17 @@ is_odd(SV *arg, SV *dummy=NULL, SV *how=NULL)
   PREINIT:
     typed_int typed;
   PPCODE:
+    TAINT_NOT;
     SV_TYPEDINT(typed, arg, "arg");
     if (typed.flags == HAS_BIGINT)
         arg = BN_is_odd(&typed.bigint->num) ? &PL_sv_yes : &PL_sv_no;
     else
         arg = typed.ival % 2 ? &PL_sv_yes : &PL_sv_no;
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        arg = newSVsv(arg);
+        SvTAINTED_on(arg);
+    }
     PUSHs(arg);
 
 void
@@ -1150,36 +1162,64 @@ is_even(SV *arg, SV *dummy=NULL, SV *how=NULL)
   PREINIT:
     typed_int typed;
   PPCODE:
+    TAINT_NOT;
     SV_TYPEDINT(typed, arg, "arg");
     if (typed.flags == HAS_BIGINT)
         arg = BN_is_odd(&typed.bigint->num) ? &PL_sv_no : &PL_sv_yes;
     else
         arg = typed.ival % 2 ? &PL_sv_no : &PL_sv_yes;
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        arg = newSVsv(arg);
+        SvTAINTED_on(arg);
+    }
     PUSHs(arg);
 
 void
 is_zero(SV *arg, SV *dummy=NULL, SV *how=NULL)
   PREINIT:
     typed_int typed;
+    bool old_tainted;
   PPCODE:
+    /* Save taint since we overload this class.
+       That means an SvTRUE can otherwise zero PL_tainted */
+    old_tainted = PL_tainted;
+    TAINT_NOT;
     SV_TYPEDINT(typed, arg, "arg");
     if (typed.flags == HAS_BIGINT)
         arg = BN_is_zero(&typed.bigint->num) ? &PL_sv_yes : &PL_sv_no;
     else
         arg = typed.ival ? &PL_sv_no : &PL_sv_yes;
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        arg = newSVsv(arg);
+        SvTAINTED_on(arg);
+    }
     PUSHs(arg);
+    PL_tainted = old_tainted;
 
 void
 is_non_zero(SV *arg, SV *dummy=NULL, SV *how=NULL)
   PREINIT:
     typed_int typed;
+    bool old_tainted;
   PPCODE:
+    /* Save taint since we overload this class.
+       That means an SvTRUE can otherwise zero PL_tainted */
+    old_tainted = PL_tainted;
+    TAINT_NOT;
     SV_TYPEDINT(typed, arg, "arg");
     if (typed.flags == HAS_BIGINT)
         arg = BN_is_zero(&typed.bigint->num) ? &PL_sv_no : &PL_sv_yes;
     else
         arg = typed.ival ? &PL_sv_yes : &PL_sv_no;
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        arg = newSVsv(arg);
+        SvTAINTED_on(arg);
+    }
     PUSHs(arg);
+    PL_tainted = old_tainted;
 
 void
 eq(SV *arg1, SV *arg2, SV *how=NULL)
@@ -1422,11 +1462,11 @@ bit(SV *arg, SV *bit_nr, SV *value=NULL)
         typed.ival = bits - typed.ival;
     }
     if (GIMME_V != G_VOID) {
-      object = sv_newmortal();
-      PUSHs(object);
-      rc = BN_is_bit_set(&result->num, (int) typed.ival);
-      if (fixup) sv_setiv(object, !rc);
-      else sv_setiv(object, rc);
+        object = sv_newmortal();
+        PUSHs(object);
+        rc = BN_is_bit_set(&result->num, (int) typed.ival);
+        if (fixup) sv_setiv(object, !rc);
+        else sv_setiv(object, rc);
     }
     if (value) {
         need_magic = SvPOK(value) || SvIOK(value) || SvNOK(value);
@@ -1454,7 +1494,6 @@ bit(SV *arg, SV *bit_nr, SV *value=NULL)
             if (bigsensitive) result->sensitive = bigsensitive->sensitive;
         }
 #endif /* SENSITIVE */
-        SvTAINT(arg);
     }
   do_fix:
     if (fixup) {
@@ -1469,6 +1508,10 @@ bit(SV *arg, SV *bit_nr, SV *value=NULL)
         }
     }
     if (error) CRYPTO_CROAK(error);
+    if (value && PL_tainting && PL_tainted) {
+        sv_taint(arg);
+        sv_taint(SvRV(arg));
+    }
 
 void
 mask_bits(SV *arg, SV *nr_bits, SV *how=NULL)

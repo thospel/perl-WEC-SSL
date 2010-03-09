@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -101,15 +101,19 @@ is($result, 37);
 $result = WEC::SSL::BigInt::byte_length($big);
 is($result, 37);
 
-my $taint = substr("$0$^X", 0, 0);
-my $arg = "257" . $taint;
-$result = WEC::SSL::BigInt->new($arg)->byte_length;
-ok(tainted($result));
-is($result, 2);
+SKIP: {
+    skip "Compiled without taint support" if !feature_taint();
 
-$result = WEC::SSL::BigInt::byte_length($arg);
-ok(tainted($result));
-is($result, 2);
+    my $taint = substr("$0$^X", 0, 0);
+    my $arg = "257" . $taint;
+    $result = WEC::SSL::BigInt->new($arg)->byte_length;
+    ok(tainted($result));
+    is($result, 2);
+
+    $result = WEC::SSL::BigInt::byte_length($arg);
+    ok(tainted($result));
+    is($result, 2);
+}
 
 "WEC::SSL::BigInt"->import(qw(byte_length));
 can_ok(__PACKAGE__, qw(byte_length));
