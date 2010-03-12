@@ -1024,6 +1024,18 @@ for (0..(feature_taint() ? 3 : -1)) {
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -4);
     ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
+
+    my $tmp = $arg1->copy;
+    $result = WEC::SSL::BigInt::abs_mask_bits($tmp, $arg2, undef);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -4);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
+    isa_ok($tmp, "WEC::SSL::BigInt");
+    is("$tmp", -4);
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
 }
 
 "WEC::SSL::BigInt"->import(@methods);

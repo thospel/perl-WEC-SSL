@@ -291,21 +291,12 @@ $result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 # divide(-1, 0) fails
 $arg1 = Big->new(-1);
@@ -349,21 +340,12 @@ $arg2->sensitive(0);
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    ($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 
 # divide(-1, 1) = -1
@@ -858,21 +840,12 @@ $result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 # divide(0, 0) fails
 $arg1 = Big->new(0);
@@ -916,21 +889,12 @@ $arg2->sensitive(0);
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    ($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 
 # divide(0, 1) = 0
@@ -1425,21 +1389,12 @@ $result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 # divide(1, 0) fails
 $arg1 = Big->new(1);
@@ -1483,21 +1438,12 @@ $arg2->sensitive(0);
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    ($q, $r) = eval { WEC::SSL::BigInt::divide($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 
 # divide(1, 1) = 1

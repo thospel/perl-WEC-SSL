@@ -81,6 +81,7 @@ SKIP: {
     is("$result", -28);
     ok(!$result->sensitive) if feature_sensitive();
     ok($result->taint);
+    ok(tainted($result));
 
     $tmp->taint(0);
     $result = WEC::SSL::BigInt::copy($tmp);
@@ -88,6 +89,7 @@ SKIP: {
     is("$result", -28);
     ok(!$result->sensitive) if feature_sensitive();
     ok(!$result->taint);
+    ok(!tainted($result));
 }
 
 "WEC::SSL::BigInt"->import(@methods);

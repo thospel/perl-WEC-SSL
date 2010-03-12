@@ -144,21 +144,12 @@ $result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 
 # perl_remainder(-1, 1) = 0
@@ -359,21 +350,12 @@ $result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 
 # perl_remainder(0, 1) = 0
@@ -574,21 +556,12 @@ $result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
 like($@, qr/\Qdiv by zero/i);
 
 # Check taint propagation
-$arg1->taint(1);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(1);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg1->taint(0);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
-
-$arg2->taint(0);
-$result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
-like($@, qr/\Qdiv by zero/i);
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = eval { WEC::SSL::BigInt::perl_remainder($arg1, $arg2) };
+    like($@, qr/\Qdiv by zero/i);
+}
 
 
 # perl_remainder(1, 1) = 0

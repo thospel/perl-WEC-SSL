@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -58,29 +58,26 @@ is($result, "");
 $result = -1 != $arg2;
 is(ref($result), "");
 is($result, "");
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, "");
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, "");
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
-
-
-# ne(-1, 0) = 1
 $arg1 = Big->new(-1);
 $arg2 = Big->new(0);
 
@@ -114,29 +111,26 @@ is($result, 1);
 $result = -1 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(-1, 1) = 1
 $arg1 = Big->new(-1);
 $arg2 = Big->new(1);
 
@@ -170,29 +164,26 @@ is($result, 1);
 $result = -1 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(0, -1) = 1
 $arg1 = Big->new(0);
 $arg2 = Big->new(-1);
 
@@ -226,29 +217,26 @@ is($result, 1);
 $result = 0 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(0, 0) = ""
 $arg1 = Big->new(0);
 $arg2 = Big->new(0);
 
@@ -282,29 +270,26 @@ is($result, "");
 $result = 0 != $arg2;
 is(ref($result), "");
 is($result, "");
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, "");
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, "");
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
-
-
-# ne(0, 1) = 1
 $arg1 = Big->new(0);
 $arg2 = Big->new(1);
 
@@ -338,29 +323,26 @@ is($result, 1);
 $result = 0 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(1, -1) = 1
 $arg1 = Big->new(1);
 $arg2 = Big->new(-1);
 
@@ -394,29 +376,26 @@ is($result, 1);
 $result = 1 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(1, 0) = 1
 $arg1 = Big->new(1);
 $arg2 = Big->new(0);
 
@@ -450,29 +429,26 @@ is($result, 1);
 $result = 1 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(1, 1) = ""
 $arg1 = Big->new(1);
 $arg2 = Big->new(1);
 
@@ -506,29 +482,26 @@ is($result, "");
 $result = 1 != $arg2;
 is(ref($result), "");
 is($result, "");
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, "");
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, "");
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, "");
-
-
-# ne(12, 9) = 1
 $arg1 = Big->new(12);
 $arg2 = Big->new(9);
 
@@ -562,29 +535,26 @@ is($result, 1);
 $result = 12 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(-12, 9) = 1
 $arg1 = Big->new(-12);
 $arg2 = Big->new(9);
 
@@ -618,29 +588,26 @@ is($result, 1);
 $result = -12 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(12, -9) = 1
 $arg1 = Big->new(12);
 $arg2 = Big->new(-9);
 
@@ -674,29 +641,26 @@ is($result, 1);
 $result = 12 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(-12, -9) = 1
 $arg1 = Big->new(-12);
 $arg2 = Big->new(-9);
 
@@ -730,29 +694,26 @@ is($result, 1);
 $result = -12 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(581, 3) = 1
 $arg1 = Big->new(581);
 $arg2 = Big->new(3);
 
@@ -786,29 +747,26 @@ is($result, 1);
 $result = 581 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(581, -3) = 1
 $arg1 = Big->new(581);
 $arg2 = Big->new(-3);
 
@@ -842,29 +800,26 @@ is($result, 1);
 $result = 581 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(-581, 3) = 1
 $arg1 = Big->new(-581);
 $arg2 = Big->new(3);
 
@@ -898,29 +853,26 @@ is($result, 1);
 $result = -581 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-# ne(-581, -3) = 1
 $arg1 = Big->new(-581);
 $arg2 = Big->new(-3);
 
@@ -954,41 +906,25 @@ is($result, 1);
 $result = -581 != $arg2;
 is(ref($result), "");
 is($result, 1);
+
 # Check operation under sensitivity
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+}
 
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::ne($arg1, $arg2);
-is(ref($result), "");
-is($result, 1);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Check operation under taint
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::ne($arg1, $arg2);
+    is(ref($result), "");
+    is($result, 1);
+    ok(tainted($result) ^ !$_);
+}
 
 
 "WEC::SSL::BigInt"->import(@methods);

@@ -129,6 +129,7 @@ ok(!$result->sensitive);
 $tmp = $arg1;
 $tmp /= $arg2;
 ok(!$tmp->sensitive);
+
 # Check taint propagation
 $arg1->taint(1);
 $result = WEC::SSL::BigInt::quotient($arg1, $arg2);

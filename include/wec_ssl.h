@@ -19,7 +19,7 @@
 #define PACKAGE_BASE "WEC::SSL"
 
 #define DO_MAGIC	1	/* Support magic */
-#define SENSITIVE	1
+#define SENSITIVE	0
 
 #define SERVER		1
 #define CLIENT		2

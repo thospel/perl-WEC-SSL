@@ -994,14 +994,26 @@ for (0..(feature_sensitive() ? 3 : -1)) {
 }
 
 # Check taint propagation
-# Check taint propagation
 for (0..(feature_taint() ? 3 : -1)) {
     $arg1->taint($_ & 1);
     $arg2->taint($_ & 2);
+
     $result = WEC::SSL::BigInt::mask_bits($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 3);
     ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
+
+    my $tmp = $arg1->copy;
+    $result = WEC::SSL::BigInt::mask_bits($tmp, $arg2, undef);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 3);
+    ok(tainted($result) ^ !$_, "taint $_");
+    ok($result->taint ^ !$_, "taint $_");
+    isa_ok($tmp, "WEC::SSL::BigInt");
+    is("$tmp", 3);
+    ok(tainted($tmp) ^ !$_, "taint $_");
+    ok($tmp->taint ^ !$_, "taint $_");
 }
 
 "WEC::SSL::BigInt"->import(@methods);

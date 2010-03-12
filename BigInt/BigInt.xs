@@ -1245,7 +1245,13 @@ eq(SV *arg1, SV *arg2, SV *how=NULL)
         break;
     }
     if (ix) retval = !retval;
-    PUSHs(retval ? &PL_sv_yes : &PL_sv_no);
+    arg1 = retval ? &PL_sv_yes : &PL_sv_no;
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        arg1 = newSVsv(arg1);
+        SvTAINTED_on(arg1);
+    }
+    PUSHs(arg1);
 
 void
 cmp(SV *arg1, SV *arg2, SV *how=NULL)
@@ -1307,6 +1313,11 @@ cmp(SV *arg1, SV *arg2, SV *how=NULL)
         object = how && !SvOK(how) ? arg1 : sv_newmortal();
         sv_setiv(object, cmp);
         break;
+    }
+    if (PL_tainting && PL_tainted) {
+        /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+        if (ix) object = MORTALCOPY(object);
+        SvTAINTED_on(object);
     }
     PUSHs(object);
 
@@ -1390,6 +1401,7 @@ lshift1(SV *from, SV *dummy=NULL, SV *how=NULL)
         if (!BN_lshift1(&result->num, &value->num))
             CRYPTO_CROAK("BN_lshift1 error");
     }
+    if (PL_tainting && PL_tainted && result == value) sv_taint(SvRV(from));
     PUSHs(from);
 
 void
@@ -1508,7 +1520,7 @@ bit(SV *arg, SV *bit_nr, SV *value=NULL)
         }
     }
     if (error) CRYPTO_CROAK(error);
-    if (value && PL_tainting && PL_tainted) {
+    if (value && PL_tainting && PL_tainted && value) {
         sv_taint(arg);
         sv_taint(SvRV(arg));
     }
@@ -1543,7 +1555,12 @@ mask_bits(SV *arg, SV *nr_bits, SV *how=NULL)
 
     if (how && !SvOK(how)) {
         /* inplace */
+        fixup = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg, "arg");
+        if (fixup) {
+            sv_taint(arg);
+            sv_taint(SvRV(arg));
+        }
     } else {
         a = SV_BIGINT(arg, "arg");
         NEW_BIGINT(result, arg);
@@ -1652,7 +1669,12 @@ copy_sign(SV *arg1, SV *arg2, SV *how=NULL)
     /* No SvGETMAGIC because SvTRUE already did that if needed */
     if (how && !SvOK(how) && typed.flags != HAS_BIGINT) {
         /* $a -= $val */
+        bool taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
@@ -1717,8 +1739,14 @@ lshift(SV *arg1, SV *arg2, SV *how=NULL)
     sensitive = 0;
     distance = GET_INT_SENSITIVE(arg2, sensitive, "shift distance");
 
-    if (how && !SvOK(how)) result = value = SV_BIGINT_RESULT(arg1, "arg1");
-    else {
+    if (how && !SvOK(how)) {
+        bool taint = PL_tainting && PL_tainted;
+        result = value = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
+    } else {
         value = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -1849,7 +1877,12 @@ add(SV *arg1, SV *arg2, SV *how=NULL)
 
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a += $val */
+        bool taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
@@ -1917,7 +1950,12 @@ subtract(SV *arg1, SV *arg2, SV *how=NULL)
     /* docs give no guarantee that result may be shared with a or b */
     if (how && !SvOK(how) && typed.flags != HAS_BIGINT) {
         /* $a -= $val */
+        bool taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
@@ -1988,7 +2026,12 @@ multiply(SV *arg1, SV *arg2, SV *how=NULL)
 
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a *= $val */
+        bool taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
@@ -2044,6 +2087,7 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
     BN_ULONG rest;
     typed_int typed;
     int rc;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (SvTRUE(how)) {
@@ -2082,8 +2126,10 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
     /* docs give no guarantee that result may be shared with a or b */
     if (how && !SvOK(how) && typed.flags != HAS_BIGINT) {
         /* $a /= $val */
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -2248,6 +2294,10 @@ divide(SV *arg1, SV *arg2, SV *how=NULL)
         }
         break;
     }
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
 
 void
 perl_modulo(SV *arg1, SV *arg2, SV *how=NULL)
@@ -2277,8 +2327,14 @@ perl_modulo(SV *arg1, SV *arg2, SV *how=NULL)
     }
 
     /* No SvGETMAGIC because SvTRUE already did that if needed */
-    if (how && !SvOK(how)) a = SV_BIGINT_RESULT(arg1, "arg1");
-    else {
+    if (how && !SvOK(how)) {
+        bool taint = PL_tainting && PL_tainted;
+        a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
+    } else {
         a = SV_BIGINT(arg1, "arg1");
         arg1 = sv_newmortal();
     }
@@ -2368,7 +2424,7 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
     typed_int typed;
     int rc, bits;
     BN_ULONG exp, rev_exp;
-    bool needs_v;
+bool needs_v, taint;
   PPCODE:
     TAINT_NOT;
     if (SvTRUE(how)) {
@@ -2384,8 +2440,10 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
     /* docs give no guarantee that result may be shared with a or b */
     if (how && !SvOK(how) && typed.flags != HAS_BIGINT) {
         /* $a /= $val */
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -2474,6 +2532,10 @@ pow(SV *arg1, SV *arg2, SV *how=NULL)
 #endif /* SENSITIVE */
         break;
     }
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     PUSHs(arg1);
 
 void
@@ -2493,7 +2555,12 @@ gcd(SV *arg1, SV *arg2, SV *how=NULL)
     /* No SvGETMAGIC since SvTRUE already did that if needed */
     if (how && !SvOK(how)) {
         /* $a gcd= $val */
+        bool taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
     } else {
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
@@ -2659,9 +2726,14 @@ negate(SV *from, SV *dummy=NULL, SV *how=NULL)
     wec_bigint bigint, result;
   PPCODE:
     TAINT_NOT;
-    if (how && (SvGETMAGIC(how), !SvOK(how)))
+    if (how && (SvGETMAGIC(how), !SvOK(how))) {
+        bool taint = PL_tainting && PL_tainted;
         result = SV_BIGINT_RESULT(from, "argument");
-    else {
+        if (taint) {
+            sv_taint(from);
+            sv_taint(SvRV(from));
+        }
+    } else {
         bigint = SV_BIGINT(from, "argument");
         NEW_BIGINT(result, from);
         if (!BN_copy(&result->num, &bigint->num))
@@ -2701,7 +2773,12 @@ int(SV *arg, SV *dummy=NULL, SV *how=NULL)
     TAINT_NOT;
     if (ix >= 4 || (how && (SvGETMAGIC(how), !SvOK(how)))) {
         /* $a ++ */
+        bool taint = PL_tainting && PL_tainted;
         result = SV_BIGINT_RESULT(arg, "arg");
+        if (taint) {
+            sv_taint(arg);
+            sv_taint(SvRV(arg));
+        }
     } else {
         SV_TYPEDINT(typed, arg, "arg");
         NEW_BIGINT(result, arg);
@@ -2811,7 +2888,12 @@ and(SV *arg1, SV *arg2, SV *how=NULL)
     b = SV_BIGINT(arg2, "arg2");
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a &= $val */
+        bool taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
+        if (taint) {
+            sv_taint(arg1);
+            sv_taint(SvRV(arg1));
+        }
 #if SENSITIVE
         a->sensitive |= b->sensitive;
 #endif /* SENSITIVE */

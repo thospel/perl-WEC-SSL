@@ -946,6 +946,7 @@ for (0..(feature_taint() ? 7 : -1)) {
     $result = WEC::SSL::BigInt::bit($arg1, $arg2, $arg3);
     is(ref($result), "");
     is($result, 1);
+    ok(tainted($result) ^ !($_ & 3), "taint $_");
     ok(tainted($arg1) ^ !$_, "taint $_");
     ok($arg1->taint ^ !$_, "taint $_");
 }
