@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -29,52 +29,60 @@ for (-28, 0, 28) {
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", $_);
     is("$tmp", $_);
-    ok(!$result->sensitive);
-    ok(!$tmp->sensitive);
-    ok(!$result->taint);
-    ok(!$tmp->taint);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok(!$tmp->sensitive) if feature_sensitive();
+    ok(!$result->taint) if feature_taint();
+    ok(!$tmp->taint) if feature_taint();
 
     $result->clear;
     is("$result", 0);
     is("$tmp", 0);
     isa_ok($result, "WEC::SSL::BigInt");
     isa_ok($tmp, "WEC::SSL::BigInt");
-    ok(!$result->sensitive);
-    ok(!$tmp->sensitive);
-    ok(!$result->taint);
-    ok(!$tmp->taint);
+    ok(!$result->sensitive) if feature_sensitive();
+    ok(!$tmp->sensitive) if feature_sensitive();
+    ok(!$result->taint) if feature_taint();
+    ok(!$tmp->taint) if feature_taint();
 
-    $tmp = $result = Big->new($_);
-    $result->sensitive(1);
-    ok($result->sensitive);
-    ok($tmp->sensitive);
+    for (0..(feature_sensitive() ? 1 : -1)) {
+        $tmp = $result = Big->new($_);
+        $result->sensitive($_ & 1);
+        ok($result->sensitive ^ !$_);
+        ok($tmp->sensitive ^ !$_);
 
-    $result->clear;
-    is("$result", 0);
-    is("$tmp", 0);
-    isa_ok($result, "Big");
-    isa_ok($tmp, "Big");
-    ok(!$result->sensitive);
-    ok(!$tmp->sensitive);
-    ok(!$result->taint);
-    ok(!$tmp->taint);
+        $result->clear;
+        is("$result", 0);
+        is("$tmp", 0);
+        isa_ok($result, "Big");
+        isa_ok($tmp, "Big");
+        ok(!$result->sensitive);
+        ok(!$tmp->sensitive);
+        ok(!$result->taint) if feature_taint();
+        ok(!$tmp->taint) if feature_taint();
+    }
 
-    $tmp = $result = Big->new($_);
-    $result->taint(1);
-    ok(!$result->sensitive);
-    ok(!$tmp->sensitive);
-    ok($result->taint);
-    ok($tmp->taint);
+    for (0..(feature_taint() ? 1 : -1)) {
+        $tmp = $result = Big->new($_);
+        $result->taint($_ & 1);
+        ok(!$result->sensitive) if feature_sensitive();
+        ok(!$tmp->sensitive) if feature_sensitive();
+        ok(tainted($result) ^ !$_);
+        ok($result->taint ^ !$_);
+        ok(!tainted($tmp));
+        ok($tmp->taint ^ !$_);
 
-    $result->clear;
-    is("$result", 0);
-    is("$tmp", 0);
-    isa_ok($result, "Big");
-    isa_ok($tmp, "Big");
-    ok(!$result->sensitive);
-    ok(!$tmp->sensitive);
-    ok(!$result->taint);
-    ok(!$tmp->taint);
+        $result->clear;
+        is("$result", 0);
+        is("$tmp", 0);
+        isa_ok($result, "Big");
+        isa_ok($tmp, "Big");
+        ok(!$result->sensitive) if feature_sensitive();
+        ok(!$tmp->sensitive) if feature_sensitive();
+        ok(!tainted($result));
+        ok(!$result->taint);
+        ok(!tainted($tmp));
+        ok(!$tmp->taint);
+    }
 
     eval { WEC::SSL::BigInt::clear($_) };
     like($@, qr/^arg is not a reference at /i);

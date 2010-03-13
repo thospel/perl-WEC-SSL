@@ -331,18 +331,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -1);
-    ok($result->sensitive & !$_);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -1);
-    ok($result->sensitive & !$_);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", -1);
-    ok($tmp->sensitive & !$_);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -446,18 +446,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 0);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -562,18 +562,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 0);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -678,18 +678,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 0);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -794,18 +794,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 2);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 2);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 2);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -910,18 +910,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 1);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 1);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 1);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1026,18 +1026,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 0);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1143,18 +1143,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 0);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 0);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1259,18 +1259,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -1);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -1);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", -1);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1375,18 +1375,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 6144);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 6144);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 6144);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1491,18 +1491,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -6144);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -6144);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", -6144);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1607,18 +1607,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 72);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 72);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 72);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1723,18 +1723,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 4648);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 4648);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", 4648);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1839,18 +1839,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -73);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -73);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", -73);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation
@@ -1955,18 +1955,18 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $result = WEC::SSL::BigInt::rshift($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -4648);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $result = $arg1 >> $arg2;
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -4648);
-    ok($result->sensitive);
+    ok($result->sensitive ^ !$_);
 
     $tmp = $arg1;
     $tmp >>= $arg2;
     isa_ok($tmp, "WEC::SSL::BigInt");
     is("$tmp", -4648);
-    ok($tmp->sensitive);
+    ok($tmp->sensitive ^ !$_);
 }
 
 # Check taint propagation

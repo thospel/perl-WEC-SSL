@@ -1658,6 +1658,7 @@ copy_sign(SV *arg1, SV *arg2, SV *how=NULL)
   PREINIT:
     wec_bigint result, a;
     typed_int typed;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (SvTRUE(how)) {
@@ -1669,13 +1670,10 @@ copy_sign(SV *arg1, SV *arg2, SV *how=NULL)
     /* No SvGETMAGIC because SvTRUE already did that if needed */
     if (how && !SvOK(how) && typed.flags != HAS_BIGINT) {
         /* $a -= $val */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -1710,6 +1708,10 @@ copy_sign(SV *arg1, SV *arg2, SV *how=NULL)
 #if SENSITIVE
     result->sensitive |= typed.bigint->sensitive;
 #endif /* SENSITIVE */
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     XPUSHs(arg1);
 
 int
@@ -1728,7 +1730,7 @@ lshift(SV *arg1, SV *arg2, SV *how=NULL)
     int rc;
     int distance;
     wec_bigint value, result;
-    bool sensitive;
+bool sensitive, taint;
   PPCODE:
     TAINT_NOT;
     if (SvTRUE(how)) {
@@ -1740,13 +1742,10 @@ lshift(SV *arg1, SV *arg2, SV *how=NULL)
     distance = GET_INT_SENSITIVE(arg2, sensitive, "shift distance");
 
     if (how && !SvOK(how)) {
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = value = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         value = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -1788,6 +1787,10 @@ lshift(SV *arg1, SV *arg2, SV *how=NULL)
 #if SENSITIVE
     result->sensitive |= sensitive;
 #endif /* SENSITIVE */
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     PUSHs(arg1);
 
 void
@@ -1865,6 +1868,7 @@ add(SV *arg1, SV *arg2, SV *how=NULL)
     wec_bigint result, a;
     const struct wec_bigint *b;
     typed_int typed;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (arg1 == arg2) {
@@ -1877,13 +1881,10 @@ add(SV *arg1, SV *arg2, SV *how=NULL)
 
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a += $val */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -1926,6 +1927,10 @@ add(SV *arg1, SV *arg2, SV *how=NULL)
 #if SENSITIVE
     result->sensitive |= b->sensitive;
 #endif /* SENSITIVE */
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     PUSHs(arg1);
 
 void
@@ -1933,7 +1938,7 @@ subtract(SV *arg1, SV *arg2, SV *how=NULL)
   PREINIT:
     wec_bigint result, a;
     const struct wec_bigint *b;
-    bool reverse;
+bool reverse, taint;
     typed_int typed;
   PPCODE:
     TAINT_NOT;
@@ -1950,13 +1955,10 @@ subtract(SV *arg1, SV *arg2, SV *how=NULL)
     /* docs give no guarantee that result may be shared with a or b */
     if (how && !SvOK(how) && typed.flags != HAS_BIGINT) {
         /* $a -= $val */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -2004,6 +2006,10 @@ subtract(SV *arg1, SV *arg2, SV *how=NULL)
 #if SENSITIVE
     result->sensitive |= b->sensitive;
 #endif /* SENSITIVE */
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     PUSHs(arg1);
 
 void
@@ -2014,6 +2020,7 @@ multiply(SV *arg1, SV *arg2, SV *how=NULL)
     BN_CTX *ctx;
     typed_int typed;
     int rc;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (arg1 == arg2) {
@@ -2026,13 +2033,10 @@ multiply(SV *arg1, SV *arg2, SV *how=NULL)
 
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a *= $val */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -2069,6 +2073,10 @@ multiply(SV *arg1, SV *arg2, SV *how=NULL)
 #if SENSITIVE
     result->sensitive |= b->sensitive;
 #endif /* SENSITIVE */
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     PUSHs(arg1);
 
 void
@@ -2311,6 +2319,7 @@ perl_modulo(SV *arg1, SV *arg2, SV *how=NULL)
     BN_ULONG rest;
     typed_int typed;
     int rc, negative;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (SvTRUE(how)) {
@@ -2328,13 +2337,10 @@ perl_modulo(SV *arg1, SV *arg2, SV *how=NULL)
 
     /* No SvGETMAGIC because SvTRUE already did that if needed */
     if (how && !SvOK(how)) {
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         arg1 = sv_newmortal();
     }
@@ -2414,6 +2420,7 @@ perl_modulo(SV *arg1, SV *arg2, SV *how=NULL)
         sv_setiv(arg1, 0);
         break;
     }
+    if (taint) sv_taint(arg1);
 
 void
 pow(SV *arg1, SV *arg2, SV *how=NULL)
@@ -2453,9 +2460,6 @@ bool needs_v, taint;
 
     switch(typed.flags) {
       case HAS_POSITIVE_INT:
-#if SENSITIVE
-        result->sensitive |= b->sensitive;
-#endif /* SENSITIVE */
         r = &result->num;
         exp = typed.ival;
         if (exp == 0) {
@@ -2527,11 +2531,11 @@ bool needs_v, taint;
         rc = BN_exp(&result->num, &a->num, &b->num, ctx);
         BN_CTX_free(ctx);
         if (!rc) CRYPTO_CROAK("BN_exp error");
-#if SENSITIVE
-        result->sensitive |= b->sensitive;
-#endif /* SENSITIVE */
         break;
     }
+#if SENSITIVE
+    result->sensitive |= b->sensitive;
+#endif /* SENSITIVE */
     if (taint) {
         sv_taint(arg1);
         sv_taint(SvRV(arg1));
@@ -2546,7 +2550,7 @@ gcd(SV *arg1, SV *arg2, SV *how=NULL)
     wec_bigint result, a, b;
     BN_CTX *ctx;
     int rc;
-    bool reverse;
+bool reverse, taint;
   PPCODE:
     TAINT_NOT;
     b = SV_BIGINT(arg2, "arg2");
@@ -2555,13 +2559,10 @@ gcd(SV *arg1, SV *arg2, SV *how=NULL)
     /* No SvGETMAGIC since SvTRUE already did that if needed */
     if (how && !SvOK(how)) {
         /* $a gcd= $val */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
     }
@@ -2585,6 +2586,10 @@ gcd(SV *arg1, SV *arg2, SV *how=NULL)
 #if SENSITIVE
     result->sensitive = a->sensitive | b->sensitive;
 #endif /* SENSITIVE */
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
+    }
     PUSHs(arg1);
 
 void
@@ -2724,16 +2729,14 @@ negate(SV *from, SV *dummy=NULL, SV *how=NULL)
     WEC::SSL::BigInt::complement = 1
   PREINIT:
     wec_bigint bigint, result;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = SV_BIGINT_RESULT(from, "argument");
-        if (taint) {
-            sv_taint(from);
-            sv_taint(SvRV(from));
-        }
     } else {
+        taint = 0;
         bigint = SV_BIGINT(from, "argument");
         NEW_BIGINT(result, from);
         if (!BN_copy(&result->num, &bigint->num))
@@ -2756,6 +2759,10 @@ negate(SV *from, SV *dummy=NULL, SV *how=NULL)
                 CRYPTO_CROAK("BN_sub_word error");
         }
     }
+    if (taint) {
+        sv_taint(from);
+        sv_taint(SvRV(from));
+    }
     PUSHs(from);
 
 void
@@ -2769,17 +2776,15 @@ int(SV *arg, SV *dummy=NULL, SV *how=NULL)
   PREINIT:
     typed_int typed;
     wec_bigint result;
+    bool taint;
   PPCODE:
     TAINT_NOT;
     if (ix >= 4 || (how && (SvGETMAGIC(how), !SvOK(how)))) {
         /* $a ++ */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = SV_BIGINT_RESULT(arg, "arg");
-        if (taint) {
-            sv_taint(arg);
-            sv_taint(SvRV(arg));
-        }
     } else {
+        taint = 0;
         SV_TYPEDINT(typed, arg, "arg");
         NEW_BIGINT(result, arg);
         switch(typed.flags) {
@@ -2820,6 +2825,10 @@ int(SV *arg, SV *dummy=NULL, SV *how=NULL)
         break;
       default:
         break;
+    }
+    if (taint) {
+        sv_taint(arg);
+        sv_taint(SvRV(arg));
     }
     PUSHs(arg);
 
@@ -2882,22 +2891,19 @@ and(SV *arg1, SV *arg2, SV *how=NULL)
     wec_bigint result, a, b;
     int len, len_a, len_b;
     U8 *buf, *buf_a, *buf_b, *buf_e, *ptr_a, *ptr_b;
-    bool negative_a, negative_b;
+bool negative_a, negative_b, taint;
   PPCODE:
     TAINT_NOT;
     b = SV_BIGINT(arg2, "arg2");
     if (how && (SvGETMAGIC(how), !SvOK(how))) {
         /* $a &= $val */
-        bool taint = PL_tainting && PL_tainted;
+        taint = PL_tainting && PL_tainted;
         result = a = SV_BIGINT_RESULT(arg1, "arg1");
-        if (taint) {
-            sv_taint(arg1);
-            sv_taint(SvRV(arg1));
-        }
 #if SENSITIVE
         a->sensitive |= b->sensitive;
 #endif /* SENSITIVE */
     } else {
+        taint = 0;
         a = SV_BIGINT(arg1, "arg1");
         NEW_BIGINT(result, arg1);
 #if SENSITIVE
@@ -2996,6 +3002,10 @@ and(SV *arg1, SV *arg2, SV *how=NULL)
             if (!bn) CRYPTO_CROAK("BN_bin2bn error");
             if (negative) BN_set_negative(&result->num, 1);
         }
+    }
+    if (taint) {
+        sv_taint(arg1);
+        sv_taint(SvRV(arg1));
     }
     PUSHs(arg1);
 

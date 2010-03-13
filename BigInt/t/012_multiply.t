@@ -7,8 +7,8 @@ use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -31,18 +31,18 @@ $arg2 = Big->new(-1);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -1);
@@ -50,38 +50,38 @@ is("$arg1", -1);
 $result = WEC::SSL::BigInt::multiply(-1, -1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -1);
 
@@ -89,83 +89,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -1);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(-1, 0) = 0
 $arg1 = Big->new(-1);
@@ -174,18 +130,18 @@ $arg2 = Big->new(0);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -1);
@@ -193,38 +149,38 @@ is("$arg1", -1);
 $result = WEC::SSL::BigInt::multiply(-1, 0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 0;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 0;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -1);
 
@@ -232,83 +188,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -1);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(-1, 1) = -1
 $arg1 = Big->new(-1);
@@ -317,18 +229,18 @@ $arg2 = Big->new(1);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -1);
@@ -336,38 +248,38 @@ is("$arg1", -1);
 $result = WEC::SSL::BigInt::multiply(-1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -1);
 
@@ -375,83 +287,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -1);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(0, -1) = 0
 $arg1 = Big->new(0);
@@ -460,18 +328,18 @@ $arg2 = Big->new(-1);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 0);
@@ -479,38 +347,38 @@ is("$arg1", 0);
 $result = WEC::SSL::BigInt::multiply(0, -1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 0 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 0);
 
@@ -518,83 +386,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 0);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(0, 0) = 0
 $arg1 = Big->new(0);
@@ -603,18 +427,18 @@ $arg2 = Big->new(0);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 0);
@@ -622,38 +446,38 @@ is("$arg1", 0);
 $result = WEC::SSL::BigInt::multiply(0, 0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 0;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 0 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 0;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 0);
 
@@ -661,83 +485,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 0);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(0, 1) = 0
 $arg1 = Big->new(0);
@@ -746,18 +526,18 @@ $arg2 = Big->new(1);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 0);
@@ -765,38 +545,38 @@ is("$arg1", 0);
 $result = WEC::SSL::BigInt::multiply(0, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 0 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 0);
 
@@ -804,83 +584,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 0);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(1, -1) = -1
 $arg1 = Big->new(1);
@@ -889,18 +625,18 @@ $arg2 = Big->new(-1);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 1);
@@ -908,38 +644,38 @@ is("$arg1", 1);
 $result = WEC::SSL::BigInt::multiply(1, -1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 1);
 
@@ -947,83 +683,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 1);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(1, 0) = 0
 $arg1 = Big->new(1);
@@ -1032,18 +724,18 @@ $arg2 = Big->new(0);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 1);
@@ -1051,38 +743,38 @@ is("$arg1", 1);
 $result = WEC::SSL::BigInt::multiply(1, 0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(0);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 0;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 0);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 0;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 1);
 
@@ -1090,83 +782,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 0);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 1);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 0);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 0);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(1, 1) = 1
 $arg1 = Big->new(1);
@@ -1175,18 +823,18 @@ $arg2 = Big->new(1);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 1);
@@ -1194,38 +842,38 @@ is("$arg1", 1);
 $result = WEC::SSL::BigInt::multiply(1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 1;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 1);
 
@@ -1233,83 +881,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 1);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(12, 9) = 108
 $arg1 = Big->new(12);
@@ -1318,18 +922,18 @@ $arg2 = Big->new(9);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 12);
@@ -1337,38 +941,38 @@ is("$arg1", 12);
 $result = WEC::SSL::BigInt::multiply(12, 9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 12 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 12);
 
@@ -1376,83 +980,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 12);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 108);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 108);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(-12, 9) = -108
 $arg1 = Big->new(-12);
@@ -1461,18 +1021,18 @@ $arg2 = Big->new(9);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -12);
@@ -1480,38 +1040,38 @@ is("$arg1", -12);
 $result = WEC::SSL::BigInt::multiply(-12, 9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -12 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -12);
 
@@ -1519,83 +1079,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -12);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -108);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -108);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(12, -9) = -108
 $arg1 = Big->new(12);
@@ -1604,18 +1120,18 @@ $arg2 = Big->new(-9);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 12);
@@ -1623,38 +1139,38 @@ is("$arg1", 12);
 $result = WEC::SSL::BigInt::multiply(12, -9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 12 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 12);
 
@@ -1662,83 +1178,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 12);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -108);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -108);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -108);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(-12, -9) = 108
 $arg1 = Big->new(-12);
@@ -1747,18 +1219,18 @@ $arg2 = Big->new(-9);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -12);
@@ -1766,38 +1238,38 @@ is("$arg1", -12);
 $result = WEC::SSL::BigInt::multiply(-12, -9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-9);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -12 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 108);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -9;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -12);
 
@@ -1805,83 +1277,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 108);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -12);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 108);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 108);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 108);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(581, 3) = 1743
 $arg1 = Big->new(581);
@@ -1890,18 +1318,18 @@ $arg2 = Big->new(3);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 581);
@@ -1909,38 +1337,38 @@ is("$arg1", 581);
 $result = WEC::SSL::BigInt::multiply(581, 3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 581 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 581);
 
@@ -1948,83 +1376,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 581);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1743);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1743);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(581, -3) = -1743
 $arg1 = Big->new(581);
@@ -2033,18 +1417,18 @@ $arg2 = Big->new(-3);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", 581);
@@ -2052,38 +1436,38 @@ is("$arg1", 581);
 $result = WEC::SSL::BigInt::multiply(581, -3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = 581 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 581);
 
@@ -2091,83 +1475,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", 581);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1743);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1743);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(-581, 3) = -1743
 $arg1 = Big->new(-581);
@@ -2176,18 +1516,18 @@ $arg2 = Big->new(3);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -581);
@@ -2195,38 +1535,38 @@ is("$arg1", -581);
 $result = WEC::SSL::BigInt::multiply(-581, 3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * 3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -581 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", -1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= 3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -581);
 
@@ -2234,83 +1574,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", -1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -581);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1743);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", -1743);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", -1743);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 # multiply(-581, -3) = 1743
 $arg1 = Big->new(-581);
@@ -2319,18 +1615,18 @@ $arg2 = Big->new(-3);
 $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = WEC::SSL::BigInt::multiply($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::multiply($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 isa_ok($tmp, "WEC::SSL::BigInt");
 is("$arg1", -581);
@@ -2338,38 +1634,38 @@ is("$arg1", -581);
 $result = WEC::SSL::BigInt::multiply(-581, -3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1->multiply(-3);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = $arg1 * -3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $result = -581 * $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1743);
-ok(!$result->sensitive);
+ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 $tmp = $arg1;
 $tmp *= -3;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -581);
 
@@ -2377,98 +1673,39 @@ $tmp = $arg1;
 $tmp *= $arg2;
 isa_ok($result, "WEC::SSL::BigInt");
 is("$tmp", 1743);
-ok(!$tmp->sensitive);
+ok(!$tmp->sensitive) if feature_sensitive();
 ok(!tainted($tmp));
 is("$arg1", -581);
+
 # Check sensitive propagation
-$arg1->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok($result->sensitive);
+for (0..(feature_sensitive() ? 3 : -1)) {
+    $arg1->sensitive($_ & 1);
+    $arg2->sensitive($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1743);
+    ok($result->sensitive ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok($result->sensitive);
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok($tmp->sensitive ^ !$_);
+}
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg1->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok($result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok($tmp->sensitive);
-$arg2->sensitive(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(!$result->sensitive);
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!$tmp->sensitive);
 # Check taint propagation
-$arg1->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(tainted($result));
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
+    $result = WEC::SSL::BigInt::multiply($arg1, $arg2);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1743);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(1);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg1->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(tainted($tmp));
-$arg2->taint(0);
-$result = WEC::SSL::BigInt::multiply($arg1, $arg2);
-isa_ok($result, "WEC::SSL::BigInt");
-is("$result", 1743);
-ok(!tainted($result));
-
-$tmp = $arg1;
-$tmp *= $arg2;
-ok(!tainted($tmp));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    $tmp = $arg1->copy;
+    $tmp *= $arg2;
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);

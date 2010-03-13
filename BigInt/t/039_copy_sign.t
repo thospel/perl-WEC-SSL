@@ -1713,32 +1713,26 @@ SKIP: {
 }
 
 # Check taint propagation
-SKIP: {
-    skip "Compiled without taint support" if !feature_taint();
+for (0..(feature_taint() ? 3 : -1)) {
+    $arg1->taint($_ & 1);
+    $arg2->taint($_ & 2);
 
-    $arg1->taint(1);
     $result = WEC::SSL::BigInt::copy_sign($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -581);
-    ok(tainted($result));
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
 
-    $arg2->taint(1);
-    $result = WEC::SSL::BigInt::copy_sign($arg1, $arg2);
+    $tmp = $arg1->copy;
+    $result = WEC::SSL::BigInt::copy_sign($tmp, $arg2, undef);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", -581);
-    ok(tainted($result));
-
-    $arg1->taint(0);
-    $result = WEC::SSL::BigInt::copy_sign($arg1, $arg2);
-    isa_ok($result, "WEC::SSL::BigInt");
-    is("$result", -581);
-    ok(tainted($result));
-
-    $arg2->taint(0);
-    $result = WEC::SSL::BigInt::copy_sign($arg1, $arg2);
-    isa_ok($result, "WEC::SSL::BigInt");
-    is("$result", -581);
-    ok(!tainted($result));
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
+    isa_ok($tmp, "WEC::SSL::BigInt");
+    is("$tmp", -581);
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);
 }
 
 

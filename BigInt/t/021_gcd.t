@@ -33,11 +33,13 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::gcd($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::gcd($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
@@ -94,11 +96,13 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::gcd($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::gcd($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
@@ -221,6 +225,7 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::gcd($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
@@ -296,16 +301,29 @@ like($@, qr/\Qgcd(0, 0) is undefined/i);
 for (0..(feature_sensitive() ? 3 : -1)) {
     $arg1->sensitive($_ & 1);
     $arg2->sensitive($_ & 2);
+
     $result = eval { WEC::SSL::BigInt::gcd($arg1, $arg2) };
     like($@, qr/\Qgcd(0, 0) is undefined/i);
+
+    $tmp = $arg1->copy;
+    $result = eval { WEC::SSL::BigInt::gcd($tmp, $arg2, undef) };
+    like($@, qr/\Qgcd(0, 0) is undefined/i);
+    ok($tmp->sensitive ^ !($_ & 1));
 }
 
 # Check taint propagation
 for (0..(feature_taint() ? 3 : -1)) {
     $arg1->taint($_ & 1);
     $arg2->taint($_ & 2);
+
     $result = eval { WEC::SSL::BigInt::gcd($arg1, $arg2) };
     like($@, qr/\Qgcd(0, 0) is undefined/i);
+
+    $tmp = $arg1->copy;
+    $result = eval { WEC::SSL::BigInt::gcd($tmp, $arg2, undef) };
+    like($@, qr/\Qgcd(0, 0) is undefined/i);
+    ok(tainted($tmp) ^ !($_ & 1), "taint $_");
+    ok($tmp->taint ^ !($_ & 1), "taint $_");
 }
 
 
@@ -318,11 +336,13 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = WEC::SSL::BigInt::gcd($arg2, $arg1, 1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $tmp = $arg1->copy;
 $result = WEC::SSL::BigInt::gcd($tmp, $arg2, undef);
 isa_ok($result, "WEC::SSL::BigInt");
@@ -337,11 +357,13 @@ isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg1->gcd($arg2);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
+
 $result = $arg1->gcd(1);
 isa_ok($result, "WEC::SSL::BigInt");
 is("$result", 1);
@@ -352,21 +374,43 @@ ok(!tainted($result));
 for (0..(feature_sensitive() ? 3 : -1)) {
     $arg1->sensitive($_ & 1);
     $arg2->sensitive($_ & 2);
+
     $result = WEC::SSL::BigInt::gcd($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 1);
     ok($result->sensitive ^ !$_);
+    
+    $tmp = $arg1->copy;
+    $result = WEC::SSL::BigInt::gcd($tmp, $arg2, undef);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok($result->sensitive ^ !$_);
+    isa_ok($tmp, "WEC::SSL::BigInt");
+    is("$tmp", 1);
+    ok($tmp->sensitive ^ !$_);    
 }
 
 # Check taint propagation
 for (0..(feature_taint() ? 3 : -1)) {
     $arg1->taint($_ & 1);
     $arg2->taint($_ & 2);
+
     $result = WEC::SSL::BigInt::gcd($arg1, $arg2);
     isa_ok($result, "WEC::SSL::BigInt");
     is("$result", 1);
     ok(tainted($result) ^ !$_);
     ok($result->taint ^ !$_);
+    
+    $tmp = $arg1->copy;
+    $result = WEC::SSL::BigInt::gcd($tmp, $arg2, undef);
+    isa_ok($result, "WEC::SSL::BigInt");
+    is("$result", 1);
+    ok(tainted($result) ^ !$_);
+    ok($result->taint ^ !$_);
+    isa_ok($tmp, "WEC::SSL::BigInt");
+    is("$tmp", 1);
+    ok(tainted($tmp) ^ !$_);
+    ok($tmp->taint ^ !$_);    
 }
 
 

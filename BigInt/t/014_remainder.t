@@ -224,7 +224,7 @@ is("$result", 0);
 ok(!$result->sensitive) if feature_sensitive();
 ok(!tainted($result));
 
-# Check sensitive propagation
+# Check sensitive propagatio
 for (0..(feature_sensitive() ? 3 : -1)) {
     $arg1->sensitive($_ & 1);
     $arg2->sensitive($_ & 2);

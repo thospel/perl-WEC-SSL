@@ -1321,7 +1321,7 @@ for (0..(feature_sensitive() ? 3 : -1)) {
     $tmp = $arg1->copy;
     eval { $tmp **= $arg2 };
     like($@, qr/\QNegative exponent not supported/i);
-    ok($tmp->sensitive ^ !$_);
+    ok($tmp->sensitive ^ !($_ & 1), "Sensitive $_");
 }
 
 # Check taint propagation

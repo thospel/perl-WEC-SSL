@@ -3,12 +3,12 @@
 # `make test'. After `make install' it should work as `perl -T 008_taint.t'
 use strict;
 use warnings;
-use Scalar::Util ();
+use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 
-use WEC::SSL::BigInt
-;
+use WEC::SSL qw(feature_sensitive feature_taint);
+use WEC::SSL::BigInt;
 
 {
     package Big;
@@ -25,43 +25,48 @@ for my $method (@methods) {
 my ($result, $tmp);
 
 $tmp = $result = WEC::SSL::BigInt->new(-28);
-ok(!$result->taint);
-ok(!$result->taint(1));
-ok($result->taint(1));
-ok($result->taint);
-ok(Scalar::Util::tainted($result));
-ok(Scalar::Util::tainted($$result));
-ok(!Scalar::Util::tainted($tmp));
-ok(Scalar::Util::tainted($$tmp));
-ok($result->taint(0));
-ok(!$result->taint(0));
-ok(!$result->taint);
-ok(!Scalar::Util::tainted($result));
-ok(!Scalar::Util::tainted($$result));
-ok(!Scalar::Util::tainted($tmp));
-ok(!Scalar::Util::tainted($$tmp));
-$result->taint(28);
-ok($result->taint);
-$result->taint(undef);
-ok(!$result->taint);
-$result->taint([]);
-ok($result->taint);
-$result->taint("0");
-ok(!$result->taint);
+if (feature_taint()) {
+    ok(!$result->taint);
+    ok(!$result->taint(1));
+    ok($result->taint(1));
+    ok($result->taint);
+    ok(tainted($result));
+    ok(tainted($$result));
+    ok(!tainted($tmp));
+    ok(tainted($$tmp));
+    ok($result->taint(0));
+    ok(!$result->taint(0));
+    ok(!$result->taint);
+    ok(!tainted($result));
+    ok(!tainted($$result));
+    ok(!tainted($tmp));
+    ok(!tainted($$tmp));
+    $result->taint(28);
+    ok($result->taint);
+    $result->taint(undef);
+    ok(!$result->taint);
+    $result->taint([]);
+    ok($result->taint);
+    $result->taint("0");
+    ok(!$result->taint);
 
-$tmp = WEC::SSL::BigInt->new(14);
-$tmp->taint(1);
-$result->taint($tmp);
-ok($result->taint);
+    $tmp = WEC::SSL::BigInt->new(14);
+    $tmp->taint(1);
+    $result->taint($tmp);
+    ok($result->taint);
 
-$tmp = WEC::SSL::BigInt->new(0);
-$tmp->taint(1);
-eval { $result->taint($tmp) };
-like($@, qr/^Turning tainting off using a tainted value at /i);
-ok($result->taint);
+    $tmp = WEC::SSL::BigInt->new(0);
+    $tmp->taint(1);
+    eval { $result->taint($tmp) };
+    like($@, qr/^Turning tainting off using a tainted value at /i);
+    ok($result->taint);
 
-is("$result", -28);
-ok(!$result->sensitive);
+    is("$result", -28);
+    ok(!$result->sensitive) if feature_sensitive();
+} else {
+    eval { $result->taint };
+    like($@, qr{^Taint not supported at });
+}
 
 "WEC::SSL::BigInt"->import(@methods);
 can_ok(__PACKAGE__, @methods);
