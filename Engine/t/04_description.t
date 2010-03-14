@@ -1,6 +1,9 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 04_description.t'
+#########################
+our $VERSION = "1.000";
+
 use strict;
 use warnings;
 BEGIN { $^W = 1 };
@@ -13,20 +16,32 @@ use WEC::SSL::Engine
 # Hopefully we have at least the dynamic engine available
 
 {
-    package Big;
+    package Eng;
     our @ISA = qw(WEC::SSL::Engine);
 }
 
-my $taint = substr("$0$^X", 0, 0);
-my ($engine, $description);
+my @struct_refs = map {
+    name	=> $_->name,
+    struct	=> eval { $_->_structure_refcount },
+    func	=> eval { $_->_function_refcount },
+}, WEC::SSL::EngineList->all;
+{
+    my $taint = substr("$0$^X", 0, 0);
+    my ($engine, $description);
 
-$engine = Big->by_name("dynamic");
-isa_ok($engine, "Big", "Check basic inheretance on creation");
-$description = $engine->description;
-is($description, "Dynamic engine loading support");
-is(tainted($description) ? 1 : 0, 0);
+    $engine = Eng->by_name("dynamic");
+    isa_ok($engine, "Eng", "Check basic inheretance on creation");
+    $description = $engine->description;
+    is($description, "Dynamic engine loading support");
+    is(tainted($description) ? 1 : 0, 0);
 
-$engine = WEC::SSL::Engine->by_name("dynamic" . $taint);
-$description = $engine->description;
-is($description, "Dynamic engine loading support");
-is(tainted($description) ? 1 : 0, 1);
+    $engine = WEC::SSL::Engine->by_name("dynamic" . $taint);
+    $description = $engine->description;
+    is($description, "Dynamic engine loading support");
+    is(tainted($description) ? 1 : 0, 1);
+}
+is_deeply([map {
+    name	=> $_->name,
+    struct	=> eval { $_->_structure_refcount },
+    func	=> eval { $_->_function_refcount },
+}, WEC::SSL::EngineList->all], \@struct_refs);

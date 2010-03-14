@@ -4,57 +4,14 @@
 INIT_UTILS
 
 #define NEW_CLASS(eng, fl, object, class) STMT_START {	\
-    Newx(engine, 1, struct wec_engine);	\
-    engine->e = eng;					\
-    engine->flags = fl;					\
+    wec_engine _engine;					\
+    Newx(_engine, 1, struct wec_engine);		\
+    _engine->e = eng;					\
+    _engine->flags = fl;				\
     (object) = sv_newmortal();				\
-    sv_setref_pv(object, class, (void*) (engine));	\
+    sv_setref_pv(object, class, (void*) _engine);	\
     SvTAINT(object);					\
 } STMT_END
-
-/* Next is a copy from eng_int.h, only used by the rederence count accessors
-   And these are purely for developer debugging, not part of the documented
-   interface. So if they don't work anymore, or drift from the actually used
-   OpenSSL version, just delete it */
-struct engine_st {
-    const char *id;
-    const char *name;
-    const RSA_METHOD *rsa_meth;
-    const DSA_METHOD *dsa_meth;
-    const DH_METHOD *dh_meth;
-    const ECDH_METHOD *ecdh_meth;
-    const ECDSA_METHOD *ecdsa_meth;
-    const RAND_METHOD *rand_meth;
-    const STORE_METHOD *store_meth;
-    /* Cipher handling is via this callback */
-    ENGINE_CIPHERS_PTR ciphers;
-    /* Digest handling is via this callback */
-    ENGINE_DIGESTS_PTR digests;
-
-    ENGINE_GEN_INT_FUNC_PTR	destroy;
-
-    ENGINE_GEN_INT_FUNC_PTR init;
-    ENGINE_GEN_INT_FUNC_PTR finish;
-    ENGINE_CTRL_FUNC_PTR ctrl;
-    ENGINE_LOAD_KEY_PTR load_privkey;
-    ENGINE_LOAD_KEY_PTR load_pubkey;
-
-    const ENGINE_CMD_DEFN *cmd_defns;
-    int flags;
-    /* reference count on the structure itself */
-    int struct_ref;
-    /* reference count on usability of the engine type. NB: This
-     * controls the loading and initialisation of any functionlity
-     * required by this engine, whereas the previous count is
-     * simply to cope with (de)allocation of this structure. Hence,
-     * running_ref <= struct_ref at all times. */
-    int funct_ref;
-    /* A place to store per-ENGINE data */
-    CRYPTO_EX_DATA ex_data;
-    /* Used to maintain the linked-list of engines. */
-    struct engine_st *prev;
-    struct engine_st *next;
-};
 
 MODULE = WEC::SSL::Engine		PACKAGE = WEC::SSL::Engine
 PROTOTYPES: ENABLE
@@ -62,7 +19,6 @@ PROTOTYPES: ENABLE
 void
 by_name(SV *class, SV *name)
   PREINIT:
-    wec_engine engine;
     SV *object;
     ENGINE *e;
     const char *class_name;
@@ -84,7 +40,6 @@ RSA(SV *class)
     WEC::SSL::Engine::RAND  = 5
   PREINIT:
     const char *class_name;
-    wec_engine engine;
     SV *object;
     ENGINE *e;
   PPCODE:
@@ -196,7 +151,6 @@ ciphers(SV *class, SV *nid)
   ALIAS:
     WEC::SSL::Engine::digests = 1
   PREINIT:
-    wec_engine engine;
     const char *class_name;
     SV *object;
     int id;
@@ -479,16 +433,27 @@ taint(SV *arg, SV *taint=NULL)
 
 int
 _structure_refcount(SV *engine)
-  ALIAS:
-    WEC::SSL::Engine::_function_refcount = 1
   PREINIT:
     wec_engine eng;
   CODE:
+    /* This code assumes all kinds off stuff about the internals */
+    /* Should only be used for debugging by developers */
     TAINT_NOT;
     eng = C_OBJECT(engine, PACKAGE_BASE "::Engine", "engine");
-    RETVAL = ix ?
-        ((struct engine_st *)eng->e)->funct_ref :
-        ((struct engine_st *)eng->e)->struct_ref;
+    RETVAL = ENGINE_STRUCTURE_REFCOUNT(eng->e);
+  OUTPUT:
+    RETVAL
+
+int
+_function_refcount(SV *engine)
+  PREINIT:
+    wec_engine eng;
+  CODE:
+    /* This code assumes all kinds off stuff about the internals */
+    /* Should only be used for debugging by developers */
+    TAINT_NOT;
+    eng = C_OBJECT(engine, PACKAGE_BASE "::Engine", "engine");
+    RETVAL = ENGINE_FUNCTION_REFCOUNT(eng->e);
   OUTPUT:
     RETVAL
 
@@ -743,16 +708,16 @@ void
 TIEHASH(SV *class)
   PREINIT:
     const char *class_name;
-    SV *object;
+    SV *engine_list;
   PPCODE:
     TAINT_NOT;
     class_name = C_CLASS(class);
-    object = sv_newmortal();
-    sv_setiv(newSVrv(object, class_name), 0);
-    PUSHs(object);
+    engine_list = sv_newmortal();
+    sv_setiv(newSVrv(engine_list, class_name), 0);
+    PUSHs(engine_list);
 
 void
-FIRSTKEY(SV *self)
+FIRSTKEY(SV *engine_list)
   PREINIT:
     ENGINE *e, *e_old;
     const char *name;
@@ -764,8 +729,8 @@ FIRSTKEY(SV *self)
     /* Load builtin engines */
     LOAD_ENGINES();
 
-    SvGETMAGIC(self);
-    sv = C_SV(self, PACKAGE_BASE "::EngineList", "self");
+    SvGETMAGIC(engine_list);
+    sv = C_SV(engine_list, PACKAGE_BASE "::EngineList", "engine_list");
     address = SvIV(sv);
 
     e = ENGINE_get_first();
@@ -776,6 +741,7 @@ FIRSTKEY(SV *self)
             croak("Assert: engine without id");
         }
 
+        /* We assume engine names are ASCII or HIGH ASCII, not utf8 */
         result = newSVpv(name, 0);
         sv_2mortal(result);
         PUSHs(result);
@@ -788,7 +754,7 @@ FIRSTKEY(SV *self)
     sv_setiv(sv, PTR2IV(e));
 
 void
-NEXTKEY(SV *self, SV *name)
+NEXTKEY(SV *engine_list, SV *name)
   PREINIT:
     ENGINE *e, *e_old;
     const char *e_name;
@@ -801,91 +767,117 @@ NEXTKEY(SV *self, SV *name)
     /* Load builtin engines */
     LOAD_ENGINES();
 
-    SvGETMAGIC(self);
-    sv = C_SV(self, PACKAGE_BASE "::EngineList", "self");
+    SvGETMAGIC(engine_list);
+    sv = C_SV(engine_list, PACKAGE_BASE "::EngineList", "engine_list");
     address = SvIV(sv);
 
     str = SvPV(name, len);
     if (str[len]) croak("Assert: perl string does not end on \\0");
     if (SvUTF8(name)) {
         for (l=0; l<len; l++)
-            if (!UNI_IS_INVARIANT(str[len]) || str[len] == 0) XSRETURN_UNDEF;
-    } else if (memchr(str, 0, len)) XSRETURN_UNDEF;
+            if (!UNI_IS_INVARIANT(str[len]) || str[len] == 0) {
+                if (address) {
+                    e_old = INT2PTR(ENGINE *, address);
+                    ENGINE_free(e_old);
+                    sv_setiv(sv, 0);
+                }
+                XSRETURN_UNDEF;
+            }
+    } else if (memchr(str, 0, len)) {
+        if (address) {
+            e_old = INT2PTR(ENGINE *, address);
+            ENGINE_free(e_old);
+            sv_setiv(sv, 0);
+        }
+        XSRETURN_UNDEF;
+    }
 
     if (address) {
-        e = INT2PTR(ENGINE *, address);
-        e_name = ENGINE_get_id(e);
-        if (!e_name) {
-            ENGINE_free(e);
-            croak("Assert: engine without id");
-        }
-        if (strEQ(e_name, str)) goto FOUND;
-    }
-    for (e = ENGINE_get_first(); e; e = ENGINE_get_next(e)) {
-        e_name = ENGINE_get_id(e);
-        if (!e_name) {
-            ENGINE_free(e);
-            croak("Assert: engine without id");
-        }
+        e_old = INT2PTR(ENGINE *, address);
+        e_name = ENGINE_get_id(e_old);
+        if (!e_name) croak("Assert: engine without id");
         if (strEQ(e_name, str)) {
-            if (address) {
-                e_old = INT2PTR(ENGINE *, address);
-                ENGINE_free(e_old);
-            }
-          FOUND:
-            e = ENGINE_get_next(e);
-            sv_setiv(sv, PTR2IV(e));
-            if (!e) break;
-            e_name = ENGINE_get_id(e);
-            if (!e_name) croak("Assert: engine without id");
-
-            result = newSVpv(e_name, 0);
-            sv_2mortal(result);
-            PUSHs(result);
-            XSRETURN(1);
+            e = ENGINE_get_next(e_old);
+        } else {
+            e = ENGINE_by_id(str);
+            if (e) e = ENGINE_get_next(e);
+            ENGINE_free(e_old);
         }
+    } else {
+        e_old = ENGINE_by_id(str);
+        if (!e_old) XSRETURN_UNDEF;
+        e = ENGINE_get_next(e_old);
     }
-    PUSHs(sv_newmortal());
+    sv_setiv(sv, PTR2IV(e));
+    if (!e) XSRETURN_UNDEF;
+    e_name = ENGINE_get_id(e);
+    if (!e_name) croak("Assert: engine without id");
+    /* We assume engine names are ASCII or HIGH ASCII, not utf8 */
+    result = newSVpv(e_name, 0);
+    sv_2mortal(result);
+    PUSHs(result);
 
 void
-FETCH(SV *self, SV *name)
+FETCH(SV *engine_list, SV *name)
   ALIAS:
     WEC::SSL::EngineList::EXISTS = 1
   PREINIT:
-    wec_engine engine;
     SV *object;
     ENGINE *e;
-    STRLEN l, len;
-    const U8 *str;
   PPCODE:
     TAINT_NOT;
 
-    SvGETMAGIC(self);
-    C_SV(self, PACKAGE_BASE "::EngineList", "self");
-
-    str = SvPV(name, len);
-    if (str[len]) croak("Assert: perl string does not end on \\0");
-    if (SvUTF8(name)) {
-        for (l=0; l<len; l++)
-            if (!UNI_IS_INVARIANT(str[len]) || str[len] == 0) XSRETURN_UNDEF;
-    } else if (memchr(str, 0, len)) XSRETURN_UNDEF;
+    SvGETMAGIC(engine_list);
+    C_SV(engine_list, PACKAGE_BASE "::EngineList", "engine_list");
 
     e = ENGINE_BY_NAME(name);
-    if (!e) XSRETURN_UNDEF;
-    if (ix == 1) XSRETURN_YES;
-
-    NEW_CLASS(e, ENGINE_NEEDS_FREE, object, PACKAGE_BASE "::Engine");
+    if (ix == 1) {
+        object = e ? &PL_sv_yes : &PL_sv_no;
+        if (PL_tainting && PL_tainted) {
+            /* The &PL_sv_yes : &PL_sv_no constants are always untainted */
+            object = MORTALCOPY(object);
+            SvTAINTED_on(object);
+        }
+    } else if (e) {
+        NEW_CLASS(e, ENGINE_NEEDS_FREE, object, PACKAGE_BASE "::Engine");
+    } else {
+        object = &PL_sv_undef;
+        if (PL_tainting && PL_tainted) {
+            object = MORTALCOPY(object);
+            SvTAINTED_on(object);
+        }
+    }
     PUSHs(object);
 
 void
-DESTROY(SV *self)
+all(SV *engine_list=NULL)
+  PREINIT:
+    ENGINE *e;
+    SV *engine;
+  PPCODE:
+    LOAD_ENGINES();
+
+    if (GIMME_V == G_SCALAR) {
+        UV uv = 0;
+        for (e = ENGINE_get_first(); e; e = ENGINE_get_next(e)) uv++;
+        XPUSHs(sv_2mortal(newSVuv(uv)));
+    } else if (GIMME_V == G_ARRAY) {
+        for (e = ENGINE_get_first(); e; e = ENGINE_get_next(e)) {
+            NEW_CLASS(e, ENGINE_NEEDS_FREE, engine, PACKAGE_BASE "::Engine");
+            ENGINE_up_ref(e);
+            XPUSHs(engine);
+        }
+    }
+
+void
+DESTROY(SV *engine_list)
   PREINIT:
     SV *object;
     IV address;
     ENGINE *e;
   PPCODE:
-    SvGETMAGIC(self);
-    object = C_SV(self, PACKAGE_BASE "::EngineList", "self");
+    SvGETMAGIC(engine_list);
+    object = C_SV(engine_list, PACKAGE_BASE "::EngineList", "engine_list");
     address = SvIV(object);
     if (address) {
         e = INT2PTR(ENGINE *, address);

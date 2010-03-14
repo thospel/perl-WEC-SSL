@@ -1,6 +1,9 @@
 #!/usr/byte_length/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 061_byte_length.t'
+#########################
+our $VERSION = "1.000";
+
 use strict;
 use warnings;
 use Scalar::Util qw(tainted);

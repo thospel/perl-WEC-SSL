@@ -34,7 +34,7 @@
 #define TAINT_RAND (PL_tainted = RAND_status() == 1 ? FALSE : TRUE)
 
 #define REF_TAINTED(arg, tainted, class, context)	\
-	PUSHs(utils.ref_tainted(aTHX_ arg, tainted, class, context))
+	PUSHs(utils->ref_tainted(aTHX_ arg, tainted, class, context))
 
 typedef struct wec_bio {
     BIO *bio;
@@ -131,6 +131,7 @@ extern bool wec_ssl_ciphers_loaded;
 
 struct util {
     const char *api_version;
+    int	engine_refcount_offset;
     void (*not_a_number)(pTHX_ SV *sv, const char *from, STRLEN len);
     SV *(*c_sv)(pTHX_ SV *object, const char *class,const char *context);
     void *(*c_object)(pTHX_ SV *object, const char *class,const char *context);
@@ -152,6 +153,7 @@ struct util {
     SV *(*ref_tainted)(pTHX_ SV *arg, SV *tainted,
                        const char *class, const char *context);
     void (*load_engines)(void);
+    int (*discover_engine_refcount_offset)(void);
     const EVP_CIPHER *(*cipher_by_name)(pTHX_ SV *name);
     const EVP_MD *(*digest_by_name)(pTHX_ SV *name);
     ENGINE *(*engine_by_name)(pTHX_ SV *name);
@@ -164,64 +166,66 @@ struct util {
     void (*crypto_croak)(const char *fallback, ...) __attribute__((noreturn));
 };
 
-#define C_SV(object, class, context) utils.c_sv(aTHX_ object, class, context)
+#define C_SV(object, class, context) utils->c_sv(aTHX_ object, class, context)
 
 #define TRY_C_OBJECT(object, class)	\
-	utils.c_object(aTHX_ object, class, NULL)
+	utils->c_object(aTHX_ object, class, NULL)
 #define C_OBJECT(object, class, context)	\
-	utils.c_object(aTHX_ object, class, context)
+	utils->c_object(aTHX_ object, class, context)
 
 #if SENSITIVE
 # define GET_INT_SENSITIVE(value, sensitive, context)	\
-	utils.get_int(aTHX_ value, &sensitive, context)
+	utils->get_int(aTHX_ value, &sensitive, context)
 # define GET_INT(value, context)			\
-	utils.get_int(aTHX_ value, NULL, context)
+	utils->get_int(aTHX_ value, NULL, context)
 #else /* SENSITIVE */
 # define GET_INT_SENSITIVE(value, sensitive, context)	\
-	utils.get_int(aTHX_ value, context)
-# define GET_INT(value, context)	utils.get_int(aTHX_ value, context)
+	utils->get_int(aTHX_ value, context)
+# define GET_INT(value, context)	utils->get_int(aTHX_ value, context)
 #endif /* SENSITIVE */
 
-#define GET_LONG(value, context) utils.get_long(aTHX_ value, context)
+#define GET_LONG(value, context) utils->get_long(aTHX_ value, context)
 
-#define GET_UV(value, context) utils.get_UV(aTHX_ value, context)
+#define GET_UV(value, context) utils->get_UV(aTHX_ value, context)
 
-#define NOT_A_NUMBER(sv, from, len) utils.not_a_number(aTHX_ sv, from, len)
+#define NOT_A_NUMBER(sv, from, len) utils->not_a_number(aTHX_ sv, from, len)
 
-#define SV_BYTES(sv, len) utils.sv_bytes(aTHX_ sv, &(len))
+#define SV_BYTES(sv, len) utils->sv_bytes(aTHX_ sv, &(len))
 
-#define SV_CANONICAL(sv, len) utils.sv_canonical(aTHX_ sv, &(len))
+#define SV_CANONICAL(sv, len) utils->sv_canonical(aTHX_ sv, &(len))
 
-#define SV_FILE(sv) utils.sv_file(aTHX_ sv)
+#define SV_FILE(sv) utils->sv_file(aTHX_ sv)
 
 #define UTF8_COPY(to, to_len, from, from_len)	\
-	utils.utf8_copy(aTHX_ to, to_len, from, from_len)
+	utils->utf8_copy(aTHX_ to, to_len, from, from_len)
 
 #define LOW_EQ(name, len, string)	\
-    ((len) == sizeof(string "")-1 && utils.low_eq(name, string))
+    ((len) == sizeof(string "")-1 && utils->low_eq(name, string))
 
-#define SV_TO_BIO(bio, param_name) utils.sv_to_bio(aTHX_ &(bio), param_name)
+#define SV_TO_BIO(bio, param_name) utils->sv_to_bio(aTHX_ &(bio), param_name)
 
-#define C_CLASS(string) ((const char *) utils.c_ascii(aTHX_ string, "class"))
-#define C_ASCII(string, context) utils.c_ascii(aTHX_ string, context)
+#define C_CLASS(string) ((const char *) utils->c_ascii(aTHX_ string, "class"))
+#define C_ASCII(string, context) utils->c_ascii(aTHX_ string, context)
 
-#define LOAD_ENGINES()	utils.load_engines()
+#define LOAD_ENGINES()	utils->load_engines()
+#define ENGINE_STRUCTURE_REFCOUNT(e)	((int *) e)[utils->engine_refcount_offset < 0 ? utils->discover_engine_refcount_offset() : utils->engine_refcount_offset]
+#define ENGINE_FUNCTION_REFCOUNT(e)	((int *) e)[1+(utils->engine_refcount_offset < 0 ? utils->discover_engine_refcount_offset() : utils->engine_refcount_offset)]
 
-#define DIGEST_BY_NAME(name) utils.digest_by_name(aTHX_ name)
-#define CIPHER_BY_NAME(name) utils.cipher_by_name(aTHX_ name)
-#define ENGINE_BY_NAME(name) utils.engine_by_name(aTHX_ name)
+#define DIGEST_BY_NAME(name) utils->digest_by_name(aTHX_ name)
+#define CIPHER_BY_NAME(name) utils->cipher_by_name(aTHX_ name)
+#define ENGINE_BY_NAME(name) utils->engine_by_name(aTHX_ name)
 
 #define TRY_CIPHER(cipher, name, len, value)	\
-	 utils.try_cipher(aTHX_ name, len, value, &(cipher))
+	 utils->try_cipher(aTHX_ name, len, value, &(cipher))
 #define TRY_DIGEST(digest, name, len, value)	\
-	 utils.try_digest(aTHX_ name, len, value, &(digest))
+	 utils->try_digest(aTHX_ name, len, value, &(digest))
 #define TRY_ENGINE(engine, name, len, value)	\
-	 utils.try_engine(aTHX_ name, len, value, &(engine))
+	 utils->try_engine(aTHX_ name, len, value, &(engine))
 
-#define CRYPTO_CROAK utils.crypto_croak
+#define CRYPTO_CROAK utils->crypto_croak
 
 #define INIT_UTILS							\
-struct util utils;							\
+struct util *utils;							\
 void init_utils(void) {							\
     SV *class, *result;							\
     I32 count;								\
@@ -252,5 +256,5 @@ void init_utils(void) {							\
     if (strcmp(u->api_version, UTILS_API_VERSION))			\
         croak("Utils provided API %s, but I expected %s",		\
               u->api_version, UTILS_API_VERSION);			\
-    utils = *u;								\
+    utils = u;								\
 }

@@ -1,6 +1,8 @@
 #include "wec_ssl.h"
 #include <limits.h>
 
+struct util the_utils;
+
 /* target is lowercase, ends in 0, and lengths are already equal */
 static int low_eq(const char *name, const char *target) {
     while (*target) {
@@ -435,17 +437,64 @@ static void load_engines(void) {
 
 static ENGINE *engine_by_name(pTHX_ SV *name) {
     char *engine_name;
-    STRLEN len;
+    STRLEN l, len;
     ENGINE *e;
 
     load_engines();
     engine_name = SvPV(name, len);
     if (engine_name[len])
         croak("Assertion: engine name is not \\0-terminated");
-    if (memchr(engine_name, 0, len)) croak("Engine name contains \\0");
-    /* No need for an unicode check, all valid names are pure ASCII */
+    /* if (memchr(engine_name, 0, len)) croak("Engine name contains \\0"); */
+    if (memchr(engine_name, 0, len)) return NULL;
+    /* We assume all valid names are pure ASCII, so any high ASCII is a bug */
+    if (SvUTF8(name))
+        for (l=0; l<len; l++)
+            if (!UNI_IS_INVARIANT(engine_name[len])) return NULL;
     e = ENGINE_by_id(engine_name);
     return e;
+}
+
+/* This code assumes all kinds off stuff about the internals:
+    - we may read beyond a struct into possibly unallocated memory
+    - refcounts are ints
+    - refcounts are aligned as ints
+    - functional refcount comes directly after structure refcount
+    - No other threads are playing with the refcounts while we are probing
+    - There is a "dynamic" engine
+   None of these assumptions is guaranteed
+   Should only be used for debugging by developers */
+#define TEST_ENGINE	"dynamic"
+int discover_engine_refcount_offset(void) {
+    ENGINE *e;
+    int ints[100], *o, *n, *end, t;
+
+    /* We should have a semaphore here */
+    if (the_utils.engine_refcount_offset >= 0)
+        croak("Multiple discover_engine_refcount_offset calls");
+
+    load_engines();
+    e = ENGINE_by_id(TEST_ENGINE);
+    if (!e) croak("Cannot find the " TEST_ENGINE " engine");
+    Copy(e, ints, sizeof(ints), char);
+    ENGINE_up_ref(e);
+    end = &ints[sizeof(ints)/sizeof(ints[0])];
+
+    for (o = ints,n = (void *) e;
+         o < end;
+         o++, n++) {
+        if (*o == *n-1) {
+            ENGINE_free(e);
+            t = *n;
+            ENGINE_free(e);
+            if (t != *o)
+                croak("Cannot find an int that looks like a refcount");
+            printf("Setting offset to %d, the_utils=%p\n", o-ints, &the_utils);
+            return the_utils.engine_refcount_offset = o-ints;
+        }
+    }
+    ENGINE_free(e);
+    ENGINE_free(e);
+    croak("Cannot find an int that looks like a refcount");
 }
 
 static int try_cipher(pTHX_ const char *name, STRLEN len, SV *value,
@@ -947,8 +996,6 @@ static SV *ref_tainted(pTHX_ SV *arg, SV *taint,
     }
 }
 
-struct util utils;
-
 MODULE = WEC::SSL::Utils		PACKAGE = WEC::SSL::Utils
 PROTOTYPES: ENABLE
 
@@ -1011,7 +1058,7 @@ context(SV *class)
     TAINT_NOT;
     class_name = c_class(class);
     object = sv_newmortal();
-    sv_setref_pv(object, class_name, (void*) &utils);
+    sv_setref_pv(object, class_name, (void*) &the_utils);
     PUSHs(object);
 
 void
@@ -1489,26 +1536,28 @@ error_string(SV *errors, SV* dummy=NULL, SV *how=NULL)
 BOOT:
     SSL_load_error_strings();
 
-    utils.api_version	= UTILS_API_VERSION;
-    utils.not_a_number	= not_a_number;
-    utils.get_int	= get_int;
-    utils.get_long	= get_long;
-    utils.get_UV	= get_UV;
-    utils.c_sv		= c_sv;
-    utils.c_object	= c_object;
-    utils.low_eq	= low_eq;
-    utils.sv_bytes	= sv_bytes;
-    utils.sv_canonical	= sv_canonical;
-    utils.sv_file	= sv_file;
-    utils.utf8_copy	= utf8_copy;
-    utils.sv_to_bio	= sv_to_bio;
-    utils.c_ascii	= c_ascii;
-    utils.ref_tainted	= ref_tainted;
-    utils.load_engines	= load_engines;
-    utils.digest_by_name= digest_by_name;
-    utils.cipher_by_name= cipher_by_name;
-    utils.engine_by_name= engine_by_name;
-    utils.try_digest	= try_digest;
-    utils.try_cipher	= try_cipher;
-    utils.try_engine	= try_engine;
-    utils.crypto_croak	= crypto_croak;
+    the_utils.engine_refcount_offset = -1;
+    the_utils.api_version	= UTILS_API_VERSION;
+    the_utils.not_a_number	= not_a_number;
+    the_utils.get_int		= get_int;
+    the_utils.get_long		= get_long;
+    the_utils.get_UV		= get_UV;
+    the_utils.c_sv		= c_sv;
+    the_utils.c_object		= c_object;
+    the_utils.low_eq		= low_eq;
+    the_utils.sv_bytes		= sv_bytes;
+    the_utils.sv_canonical	= sv_canonical;
+    the_utils.sv_file		= sv_file;
+    the_utils.utf8_copy		= utf8_copy;
+    the_utils.sv_to_bio		= sv_to_bio;
+    the_utils.c_ascii		= c_ascii;
+    the_utils.ref_tainted	= ref_tainted;
+    the_utils.load_engines	= load_engines;
+    the_utils.discover_engine_refcount_offset = discover_engine_refcount_offset;
+    the_utils.digest_by_name	= digest_by_name;
+    the_utils.cipher_by_name	= cipher_by_name;
+    the_utils.engine_by_name	= engine_by_name;
+    the_utils.try_digest	= try_digest;
+    the_utils.try_cipher	= try_cipher;
+    the_utils.try_engine	= try_engine;
+    the_utils.crypto_croak	= crypto_croak;

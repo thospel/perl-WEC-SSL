@@ -162,6 +162,9 @@ you can import methods under modified (prefixed) names.
 
 =head1 SEE ALSO
 
+L<WEC::SSL::EngineList>,
+L<WEC::SSL::Digest>
+
 =head1 AUTHOR
 
 Ton Hospel, E<lt>WEC-SSL-Engine@ton.iguana.beE<gt>

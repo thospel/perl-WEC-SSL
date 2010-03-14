@@ -1,6 +1,9 @@
 #!/usr/bin/perl -wT
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 05_flags.t'
+#########################
+our $VERSION = "1.000";
+
 use strict;
 use warnings;
 BEGIN { $^W = 1 };
@@ -12,7 +15,7 @@ use WEC::SSL::Engine;
 # Hopefully we have at least the dynamic engine available
 
 {
-    package Big;
+    package Eng;
     our @ISA = qw(WEC::SSL::Engine);
 }
 
@@ -27,8 +30,8 @@ for my $method (@methods) {
 
 my ($engine, $flags);
 
-$engine = Big->by_name("dynamic");
-isa_ok($engine, "Big", "Check basic inheretance on creation");
+$engine = Eng->by_name("dynamic");
+isa_ok($engine, "Eng", "Check basic inheretance on creation");
 $flags = $engine->flags;
 is($flags, WEC::SSL::Engine::FLAGS_BY_ID_COPY);
 is(tainted($flags) ? 1 : 0, 0);
@@ -40,7 +43,7 @@ is(tainted($flags) ? 1 : 0, 1);
 
 eval { $engine->flags(WEC::SSL::Engine::FLAGS_BY_ID_COPY) };
 like($@, qr/^Insecure dependency in 'flags' while running with -T switch at /i);
-$engine = Big->by_name("dynamic");
+$engine = Eng->by_name("dynamic");
 eval { $engine->flags(WEC::SSL::Engine::FLAGS_BY_ID_COPY() . $taint) };
 like($@, qr/^Insecure dependency in 'flags' while running with -T switch at /i);
 $flags = $engine->flags;

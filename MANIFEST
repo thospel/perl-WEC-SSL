@@ -140,6 +140,7 @@ Engine/t/02_taint.t
 Engine/t/03_name.t
 Engine/t/04_description.t
 Engine/t/05_flags.t
+Engine/t/06_engine_list.t
 MANIFEST
 MANIFEST.SKIP
 Makefile.PL

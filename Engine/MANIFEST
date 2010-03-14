@@ -10,3 +10,4 @@ t/02_taint.t
 t/03_name.t
 t/04_description.t
 t/05_flags.t
+t/06_engine_list.t

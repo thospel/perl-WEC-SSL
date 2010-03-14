@@ -32,7 +32,7 @@ new(char *class, ...)
           case 'e': case 'E':
             if (LOW_EQ(name, len, "engine")) {
                 if (engine) croak("Multiple engine arguments");
-                croak("Engines not implemented yet");
+                engine = C_OBJECT(engine, PACKAGE_BASE "::Engine", "engine");
                 goto OK;
             }
             break;

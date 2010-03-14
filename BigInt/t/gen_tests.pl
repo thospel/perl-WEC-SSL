@@ -1,4 +1,7 @@
 #!/usr/bin/perl -w
+use strict;
+
+our $VERSION = "1.000";
 
 ~0 == 18446744073709551615 || die "Only run this on a 64-bit perl";
 
