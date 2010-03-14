@@ -61,13 +61,13 @@ my @struct_refs = map {
        "The dynamic engine still exists even if asked for with an utf8 string");
     ok(!exists $engines{"dynamic\0"}, "The dynamic\\0 engine does not exist");
 
-SKIP: {
-    skip "No taint support" unless feature_taint();
+  SKIP: {
+      skip "No taint support" unless feature_taint();
 
-    my $taint =substr("$0$^X", 0, 0);
-    my $engine = $engines{"dynamic$taint"};
-    ok(tainted($engine));
-    ok($engine->taint);
+      my $taint =substr("$0$^X", 0, 0);
+      my $engine = $engines{"dynamic$taint"};
+      ok(tainted($engine));
+      ok($engine->taint);
     }
 }
 is_deeply([map {

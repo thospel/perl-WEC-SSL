@@ -31,8 +31,10 @@ new(char *class, ...)
             break;
           case 'e': case 'E':
             if (LOW_EQ(name, len, "engine")) {
+                wec_engine eng;
                 if (engine) croak("Multiple engine arguments");
-                engine = C_OBJECT(engine, PACKAGE_BASE "::Engine", "engine");
+                eng = C_OBJECT(ST(i+1), PACKAGE_BASE "::Engine", "engine");
+                engine = eng->e;
                 goto OK;
             }
             break;
@@ -48,7 +50,7 @@ new(char *class, ...)
 
     EVP_MD_CTX_init(&digest_context->ctx);
     rc = EVP_DigestInit_ex(&digest_context->ctx, digest, engine);
-    if (rc != 1) croak("Error initializing digest object");
+    if (rc != 1) CRYPTO_CROAK("Error initializing digest object");
     digest_context->finished = 0;
 
     XPUSHs(object);
@@ -75,7 +77,7 @@ finish(wec_digest_context digest_context)
   CODE:
     if (digest_context->finished) croak("Digest object is finished");
     rc = EVP_DigestFinal_ex(&digest_context->ctx, result, &nr_out);
-    if (rc != 1) croak("Could not finish digest");
+    if (rc != 1) CRYPTO_CROAK("Could not finish digest");
     RETVAL = newSVpvn(result, nr_out);
     digest_context->finished = 1;
   OUTPUT:
@@ -164,7 +166,7 @@ new(char *class, ...)
 
     HMAC_CTX_init(&hmac_context->ctx);
     /*rc = */ HMAC_Init_ex(&hmac_context->ctx, key, (int) key_len, digest, engine);
-    /* if (rc != 1) croak("Error initializing HMAC object"); */
+    /* if (rc != 1) CRYPTO_CROAK("Error initializing HMAC object"); */
     hmac_context->finished = 0;
 
     XPUSHs(object);

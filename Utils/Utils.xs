@@ -488,7 +488,6 @@ int discover_engine_refcount_offset(void) {
             ENGINE_free(e);
             if (t != *o)
                 croak("Cannot find an int that looks like a refcount");
-            printf("Setting offset to %d, the_utils=%p\n", o-ints, &the_utils);
             return the_utils.engine_refcount_offset = o-ints;
         }
     }
@@ -757,7 +756,7 @@ static SV *c_sv(pTHX_ SV *object, const char *class, const char *context) {
 
     if (!SvOK(object)) {
         if (!context) return NULL;
-        croak("%s is tondefined", context);
+        croak("%s is undefined", context);
     }
     if (!SvROK(object)) {
         if (!context) return NULL;
