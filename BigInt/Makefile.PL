@@ -19,7 +19,7 @@ for my $dir (split m{:}, $ENV{PATH}) {
 $openssl_path = shift if @ARGV && $ARGV[0] ne "--";
 shift if @ARGV && $ARGV[0] eq '--';   # Rest of args are for MakeMaker
 
-die "Could not find openssl executable\n" if !$openssl_path;
+die "Could not find openssl executable\n" if !defined $openssl_path;
 print "openssl_path=$openssl_path\n";
 my $exe_path;
 for my $exe_name ("bin/openssl", "bin/openssl.exe",
