@@ -380,7 +380,7 @@ try_load_from_egd(SV *path, SV *nr_bytes=NULL)
     TAINT_NOT;
     filename = SV_FILE(path);
     TAINT_PROPER("try_load_from_egd");
-    /* It's ok if nr_bytes is tainted, if path is trusted the entropy 
+    /* It's ok if nr_bytes is tainted, if path is trusted the entropy
        addition will be proper */
     if (nr_bytes) {
         bytes = GET_INT(nr_bytes, "nr_bytes");

@@ -14,7 +14,7 @@ use WEC::SSL::Rand
 
 my $taint = substr("$^X$0", 0, 0);
 
-# Not much we can do to test effectivity of seeding, but we can at least 
+# Not much we can do to test effectivity of seeding, but we can at least
 # go through the motions of calling it.
 
 my @methods = qw(seed);

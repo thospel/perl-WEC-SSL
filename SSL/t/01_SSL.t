@@ -11,4 +11,3 @@ use Test::More "no_plan";
 
 use WEC::SSL::SSL;
 pass("dummy");
-

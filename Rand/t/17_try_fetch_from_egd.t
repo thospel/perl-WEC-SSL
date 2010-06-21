@@ -40,7 +40,7 @@ my %count;
 sub count {
     $count{$_}++ for unpack("b*", shift) =~ /./g;
 }
-    
+
 unlink($out_file) || $! == ENOENT || die "Could not unlink '$out_file': $!";
 spew($out_file, "");
 

@@ -50,14 +50,14 @@ Whenever you call some crypto/ssl function through the WEC::SSL perl modules,
 the exception that's raised can be such a WEC::SSL::Errors object. But not all
 errors will be of this type. You can also get plain old string exceptions,
 e.g. if the problem involves argument checking in before the real low level
-call is done. Also, some of the low level calls don't report their errors 
-through the OpenSSL error queue, and in that case you'll also get plain old 
+call is done. Also, some of the low level calls don't report their errors
+through the OpenSSL error queue, and in that case you'll also get plain old
 string exceptions.
 
 It has overloads so that it will call L<error_string|"error_string"> in a
 string context (and always be true in a boolean context). These overloads are
 available even if you didn't explicitely load WEC::SSL::Errors since you can
-get error objects purely by using other parts of WEC::SSL. In particular this 
+get error objects purely by using other parts of WEC::SSL. In particular this
 means that you can always use $@ as a string, and if the exception is uncaught
 or rethrown you will get a sane string version of the error.
 
@@ -67,7 +67,7 @@ or rethrown you will get a sane string version of the error.
 
 =item $errors->errors
 
-Returns an array reference. Each element is one of the errors in the error 
+Returns an array reference. Each element is one of the errors in the error
 sequence and of type L<WEC::SSL::Error|WEC::SSL::Error>. There will be always
 at least one element in the array, and quite often in fact no more than one.
 
@@ -75,21 +75,21 @@ at least one element in the array, and quite often in fact no more than one.
 
 Returns the perl file and line number where the error happened in the normal
 style that perl adds these to an exception, so of the form
-" at <file_name> line <line_number>.\n". 
-See L<WEC::SSL::Error::c_file|WEC::SSL::Error/c_file> and 
+" at <file_name> line <line_number>.\n".
+See L<WEC::SSL::Error::c_file|WEC::SSL::Error/c_file> and
 L<WEC::SSL::Error::c_line|WEC::SSL::Error/c_line> for the file and linenumber
 in the source files of the OpenSSL library.
 
 =item $errors->file
 
-Returns the perl file where the error happened. See 
-L<WEC::SSL::Error::c_file|WEC::SSL::Error/c_file> for the source file in the 
+Returns the perl file where the error happened. See
+L<WEC::SSL::Error::c_file|WEC::SSL::Error/c_file> for the source file in the
 OpenSSL library.
 
 =item $errors->line
 
-Returns the perl line number where the error happened. See 
-L<WEC::SSL::Error::c_line|WEC::SSL::Error/c_line> for the line in a source 
+Returns the perl line number where the error happened. See
+L<WEC::SSL::Error::c_line|WEC::SSL::Error/c_line> for the line in a source
 file in the OpenSSL library.
 
 =item $errors->error_string
@@ -98,7 +98,7 @@ Returns a simple string description os the errors. It will consist of
 the L<descriptions of the individual errors|WEC::SSL::Error/error_string>
 separated by commas, followed by the perl file and line number.
 
-In a numeric context the result will evaluate to the 
+In a numeric context the result will evaluate to the
 L<error code|WEC::SSL::Error/code> of the last error in the sequence.
 
 =back
@@ -119,7 +119,7 @@ None
       printf("Where = '%s'\n", $@->where);
       printf("File  = %s\n", $@->file);
       printf("Line  = %u\n", $@->line);
-  
+
       printf "description = '%s'\n", $@->error_string;
       printf "code        = %d\n", $@->error_string;
       print "description  = '$@'\n";

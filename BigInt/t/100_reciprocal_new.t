@@ -40,7 +40,7 @@ for my $n (-25, -1, 1, 25, "123456789" x 100) {
 
   SKIP: {
       skip "Compiled without taint support" if !feature_taint();
-      
+
       $val = Big->new($n . $taint);
       $rec = WEC::SSL::Reciprocal->new($val);
       ok(!$rec->sensitive) if feature_sensitive();

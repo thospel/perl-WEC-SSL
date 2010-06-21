@@ -25,27 +25,27 @@ WEC::SSL::Montgomery - Montgomery reduction for faster modular arithmetic
 Montgomery multiplication leads to a faster form of modular multiplication.
 It works by taking a modulus m and calculating an R such that gcd(m, R) = 1.
 This is usually done by taking R = b**r where b is some natural wordsize
-(like 2**32) and r is the smallest integer such that R > m. (this obviously 
+(like 2**32) and r is the smallest integer such that R > m. (this obviously
 only works if m is odd). Then R**-1 (mod m) is determined (which will be
 an integer, we're doing modular arithmetic here).
 
-A montgomery multiplication of a and b is then a*b*R**-1 mod m. The crucial 
+A montgomery multiplication of a and b is then a*b*R**-1 mod m. The crucial
 part is that this can be done quite fast.
 
-The final step is how to do a normal multiplication of aa and bb. The basic 
-idea is to first convert these to "montgomery form" 
+The final step is how to do a normal multiplication of aa and bb. The basic
+idea is to first convert these to "montgomery form"
 
-  a=aa*R mod m 
+  a=aa*R mod m
  and
-  b=bb*R mod m. 
+  b=bb*R mod m.
 
-Montgomery multiplication then gives 
+Montgomery multiplication then gives
 
   a*b*R**-1 mod m = aa*bb*R mod m
 
 which is the "montgomery form" of the wanted result.
 
-So you can do many modular multiplies (for example for a modular 
+So you can do many modular multiplies (for example for a modular
 exponentiation) by first converting your numbers to montgomery form, then doing
 all needed multiplications as montgomery multiplications and finally convert
 back to normal form.

@@ -38,8 +38,8 @@ WEC::SSL - WEC::SSL frontent module
 
 =item openssl_version
 
-A dualvar scalar. Evaluates to a string with something like 
-"OpenSSL 0.9.8 05 Jul 2005" in string context. Evaluates to a version number 
+A dualvar scalar. Evaluates to a string with something like
+"OpenSSL 0.9.8 05 Jul 2005" in string context. Evaluates to a version number
 like 0x0090800f in numeric context.
 
 Numeric version identifier work as follows:
@@ -64,7 +64,7 @@ tracked and some toekn effort is made not to leak it.
 
 =item $bool = feature_taint
 
-The code is compiled with C<taint> support. See L<perlsec|perlsec> for more 
+The code is compiled with C<taint> support. See L<perlsec|perlsec> for more
 details about taint mode.
 
 =item $bool = feature_magic

@@ -72,7 +72,7 @@ static int get_fileno(pTHX_ SV *value, IO **pio) {
         fd = nv;
         diff = nv - (NV) fd;
         if (diff >= 1)
-            croak("Socket '%"SVf"' fileno is larger than %d", 
+            croak("Socket '%"SVf"' fileno is larger than %d",
                   value, PERL_INT_MAX);
         if (diff <= -1)
             croak("Socket '%"SVf"' fileno is smaller than %d",
@@ -553,9 +553,9 @@ push(wec_bio_chain bio_chain, ...)
         bio_sv = ST(i+1);
         if (!SvOK(bio_sv)) croak("Argument %d is undefined", (int) (i+1));
         if (!sv_derived_from(bio_sv, PACKAGE_BASE "::Bio"))
-            croak("Argument %d is not of type " PACKAGE_BASE "::Bio", 
+            croak("Argument %d is not of type " PACKAGE_BASE "::Bio",
                   (int) (i+1));
-        if (!SvROK(bio_sv)) 
+        if (!SvROK(bio_sv))
             croak("Argument %d is not a reference", (int) (i+1));
         bio_chain->bio[bio_chain->nr_bio+i] = bio_sv = SvRV(bio_sv);
         tmp = SvIV(bio_sv);

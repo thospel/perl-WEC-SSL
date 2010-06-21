@@ -545,9 +545,9 @@ This method is a wrapper for OpenSSL constant BN_MASK2.
 
 =item X<PERL_MAX_WORD>$max_int = WEC::SSL::BigInt::PERL_MAX_WORD()
 
-Returns a perl integer with a value equal to the minimum of 
-L<MAX_WORD|"MAX_WORD"> and UV_MAX (the value perl returns for ~0) and 
-represents the maximal integer that is "simple" both from the view of perl and 
+Returns a perl integer with a value equal to the minimum of
+L<MAX_WORD|"MAX_WORD"> and UV_MAX (the value perl returns for ~0) and
+represents the maximal integer that is "simple" both from the view of perl and
 OpenSSL. At the negative side the extreme value will be -min(MAX_WORD, ~0/2+1.
 
 =item X<add>$sum = WEC::SSL::BigInt::add($arg1, $arg2)
@@ -1678,7 +1678,7 @@ values (except L<callback_period|rand_prime_callback_period>).
 
 =back
 
-The returned result is always tainted if the PRNG is not sufficiently seeded 
+The returned result is always tainted if the PRNG is not sufficiently seeded
 (see L<WEC::SSL::Rand::status|WEC::SSL::Rand/status>).
 
 This method is a wrapper for OpenSSL function
@@ -1753,7 +1753,7 @@ number in the range 0 E<lt>= $rand E<lt> $limit.
 
 The PRNG must be seeded prior to calling this method.
 
-The returned result is always tainted if the PRNG is not sufficiently seeded 
+The returned result is always tainted if the PRNG is not sufficiently seeded
 (see L<WEC::SSL::Rand::status|WEC::SSL::Rand/status>).
 
 This method is a wrapper for OpenSSL function
@@ -1767,7 +1767,7 @@ raised). The returned value will be a pseudo-random number in the range
 purposes and for certain purposes in cryptographic protocols, but usually not
 for key generation etc.
 
-The returned result is always tainted if the PRNG is not sufficiently seeded 
+The returned result is always tainted if the PRNG is not sufficiently seeded
 (see L<WEC::SSL::Rand::status|WEC::SSL::Rand/status>).
 
 This method is a wrapper for OpenSSL function
@@ -1810,7 +1810,7 @@ values.
 
 The PRNG must be seeded prior to calling this method.
 
-The returned result is always tainted if the PRNG is not sufficiently seeded 
+The returned result is always tainted if the PRNG is not sufficiently seeded
 (see L<WEC::SSL::Rand::status|WEC::SSL::Rand/status>).
 
 This method is a wrapper for OpenSSL function L<BN_rand|BN_rand(3)>.
@@ -1852,7 +1852,7 @@ values.
 
 =back
 
-The returned result is always tainted if the PRNG is not sufficiently seeded 
+The returned result is always tainted if the PRNG is not sufficiently seeded
 (see L<WEC::SSL::Rand::status|WEC::SSL::Rand/status>).
 
 This method is a wrapper for OpenSSL function

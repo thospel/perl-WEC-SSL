@@ -23,7 +23,7 @@ shift if @ARGV && $ARGV[0] eq '--';   # Rest of args are for MakeMaker
 die "Could not find openssl executable\n" if !defined $openssl_path;
 print "openssl_path=$openssl_path\n";
 my $exe_path;
-for my $exe_name ("bin/openssl", "bin/openssl.exe", 
+for my $exe_name ("bin/openssl", "bin/openssl.exe",
                   "sbin/openssl", "sbin/openssl.exe",
                   "out32dll/openssl.exe",
                   "openssl", "openssl.exe") {
@@ -37,9 +37,9 @@ if (!$exe_path) {
 }
 print "exe_path=$exe_path\n";
 
-my $version = `$exe_path version` || 
+my $version = `$exe_path version` ||
     die "Couldn't run '$exe_path version' ($?)\n";
-my ($lib_name, $major, $minor, $letters) = 
+my ($lib_name, $major, $minor, $letters) =
     $version =~ /^(OpenSSL)\s+(\d+\.\d+)\.(\d+)([a-z-]*)\s/ or
     die("Could not parse OpenSSL version string '$version'.\n",
         "Either you have bogus OpenSSL or a new version has changed the version number format.\n");
@@ -54,7 +54,7 @@ if ($^O eq "MSWin32") {
     # of these libraries. Tarang Kumar Patel <mombasa@ptolemy.arc.nasa.gov>
     # reports this order to work on Solaris 7 and openssl-0.9.6b
     $libs = $rsaref ? "-lssl -lcrypto -lRSAglue -lrsaref" : "-lssl -lcrypto";
-    
+
     # old order which might work on some platforms
     #$libs = $rsaref ? "-lssl -lRSAglue -lcrypto -lrsaref" : "-lssl -lcrypto";
 

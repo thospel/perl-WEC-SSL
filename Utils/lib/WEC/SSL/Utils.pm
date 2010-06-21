@@ -57,7 +57,7 @@ the other modules and so should not normally be needed to be done by the user.
 
 =item $old_tainted = tainted($arg, $new_tainted)
 
-When called with two arguments, it taints (if the second argument is true) or 
+When called with two arguments, it taints (if the second argument is true) or
 untaints (if the second argument is false) the first argument.
 
 Trying to turn tainting off using a tainted second argument will result in an

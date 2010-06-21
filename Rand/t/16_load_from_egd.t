@@ -44,7 +44,7 @@ like($@, qr/^Could not connect to '\Q$out_file\E': .+ at /i);
 
 my $entropy = eval { WEC::SSL::Rand::egd_entropy($egd_file) };
 SKIP: {
-    skip "egd file $egd_file doesn't really seem to be an egd device ($@)" if 
+    skip "egd file $egd_file doesn't really seem to be an egd device ($@)" if
         $@;
   SKIP: {
       skip "Not enough entropy" if $entropy < 5;

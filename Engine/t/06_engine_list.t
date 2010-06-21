@@ -57,7 +57,7 @@ my @struct_refs = map {
     ok(!exists $engines{chr 0xa0}, "The \\xa0 engine does not exist");
     my $dynamic = "dynamic";
     utf8::upgrade($dynamic);
-    ok(exists $engines{$dynamic}, 
+    ok(exists $engines{$dynamic},
        "The dynamic engine still exists even if asked for with an utf8 string");
     ok(!exists $engines{"dynamic\0"}, "The dynamic\\0 engine does not exist");
 

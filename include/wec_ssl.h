@@ -135,9 +135,9 @@ struct util {
     void (*not_a_number)(pTHX_ SV *sv, const char *from, STRLEN len);
     SV *(*c_sv)(pTHX_ SV *object, const char *class,const char *context);
     void *(*c_object)(pTHX_ SV *object, const char *class,const char *context);
-    int (*get_int)(pTHX_ SV *value, 
+    int (*get_int)(pTHX_ SV *value,
 #if SENSITIVE
-                   bool *sensitive, 
+                   bool *sensitive,
 #endif /* SENSITIVE */
                    const char *context);
     long (*get_long)(pTHX_ SV *value, const char *context);
@@ -157,11 +157,11 @@ struct util {
     const EVP_CIPHER *(*cipher_by_name)(pTHX_ SV *name);
     const EVP_MD *(*digest_by_name)(pTHX_ SV *name);
     ENGINE *(*engine_by_name)(pTHX_ SV *name);
-    int (*try_cipher)(pTHX_ const char *name, STRLEN len, SV *value, 
+    int (*try_cipher)(pTHX_ const char *name, STRLEN len, SV *value,
                       const EVP_CIPHER **cipher);
-    int (*try_digest)(pTHX_ const char *name, STRLEN len, SV *value, 
+    int (*try_digest)(pTHX_ const char *name, STRLEN len, SV *value,
                       const EVP_MD **digest);
-    int (*try_engine)(pTHX_ const char *name, STRLEN len, SV *value, 
+    int (*try_engine)(pTHX_ const char *name, STRLEN len, SV *value,
                       const ENGINE **engine);
     void (*crypto_croak)(const char *fallback, ...) __attribute__((noreturn));
 };

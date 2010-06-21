@@ -62,4 +62,3 @@ is(0  + $error->error_string, $error->code);
 is("$error", "invalid length");
 is(sprintf("%d", $error), $error->code);
 ok($error);
-

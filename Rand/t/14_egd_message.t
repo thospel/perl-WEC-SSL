@@ -10,6 +10,5 @@ pass("Dummy pass");
 diag("\nThe EGD tests assume you have some EGD daemon running for socket
 $egd_file.\n
 The EGD tests can fail if you are using a daemon that only provides a small
-entropy pool. In that case you might see a failures where a number is 
+entropy pool. In that case you might see a failures where a number is
 smaller than expected followed by zeros that are smaller than expected");
-

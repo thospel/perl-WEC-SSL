@@ -54,7 +54,7 @@ SKIP: {
       is($str, 5);
       ok(!tainted($str));
       # Can fail if some entropy immediately got added
-      is(WEC::SSL::Rand::egd_entropy($egd_file), $e-5, 
+      is(WEC::SSL::Rand::egd_entropy($egd_file), $e-5,
          "Entropy is lowered due to fetch");
   }
 
