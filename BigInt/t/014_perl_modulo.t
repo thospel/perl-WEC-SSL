@@ -2,10 +2,11 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 014_perl_modulo.t'
 #########################
-our $VERSION = "1.000";
-
 use strict;
 use warnings;
+
+our $VERSION = "1.000";
+
 use Scalar::Util qw(tainted);
 BEGIN { $^W = 1 };
 use Test::More "no_plan";

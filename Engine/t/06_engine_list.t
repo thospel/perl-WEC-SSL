@@ -2,10 +2,11 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl -T 06_engine_list.t'
 #########################
-our $VERSION = "1.000";
-
 use strict;
 use warnings;
+
+our $VERSION = "1.000";
+
 BEGIN { $^W = 1 };
 use Test::More "no_plan";
 use Scalar::Util qw(tainted);
