@@ -3,6 +3,7 @@
 # `make test'. After `make install' it should work as `perl 091_print_hex.t'
 # No taint checking in this test
 
+## no critic (ProhibitUselessNoCritic ProhibitMagicNumbers)
 use strict;
 use warnings;
 use FindBin qw($Bin);

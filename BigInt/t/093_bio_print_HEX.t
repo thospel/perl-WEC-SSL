@@ -3,6 +3,7 @@
 # `make test'. After `make install' it should work as `perl 093_bio_print_HEX.t'
 # No taint checking in this test
 
+## no critic (ProhibitUselessNoCritic ProhibitMagicNumbers)
 use strict;
 use warnings;
 BEGIN { $^W = 1 };
