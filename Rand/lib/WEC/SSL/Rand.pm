@@ -470,7 +470,7 @@ exception for all errors.
 
 It attempts to read upto $max_bytes bytes from file $filename and add them to
 the PRNG (with entropy zero). If $max_bytes is not given, the complete file is
-read. The behaviour of this function without $max_bytes on special files is
+read. The behavior of this function without $max_bytes on special files is
 unspecified.
 
 =item X<try_write_file>$written = try_write_file($filename)
