@@ -67,9 +67,12 @@ if ($^O eq "MSWin32") {
 WriteMakefile
     (NAME		=> 'WEC::SSL::BigInt',
      VERSION_FROM	=> 'lib/WEC/SSL/BigInt.pm', # finds $VERSION
+     BUILD_REQUIRES	=> {
+	 # Only for the tests
+	 "Test::More"	=> "0.01",
+     },
      PREREQ_PM		=> {
          "Exporter::Tidy"	=> 0.05,	# For flexible exporting"
-         "Test::More"		=> 0.11,	# For the tests only
          # WEC::SSL::Rand	=> 0.01,	# For the tests only
      },  # e.g., Module::Name => 1.1
      AUTHOR		=> 'Ton Hospel <WEC-SSL-BigInt@ton.iguana.be>',

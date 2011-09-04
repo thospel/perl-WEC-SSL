@@ -68,9 +68,12 @@ if ($^O eq "MSWin32") {
 WriteMakefile
     (NAME		=> 'WEC::SSL::X509',
      VERSION_FROM	=> 'lib/WEC/SSL/X509.pm', # finds $VERSION
+     BUILD_REQUIRES	=> {
+	 # Only for the tests
+	 "Test::More"	=> "0.01",
+     },
      PREREQ_PM		=> {
          "Exporter::Tidy"	=> 0.05,	# For flexible exporting"
-         "Test::More"		=> 0.11,	# For the tests only
      }, # e.g., Module::Name => 1.1
      AUTHOR		=> 'Ton Hospel <WEC-SSL-X509@ton.iguana.be>',
      # OPTIMIZE		=> "-g",

@@ -68,12 +68,14 @@ if ($^O eq "MSWin32") {
 WriteMakefile
     (NAME		=> 'WEC::SSL::SSL',
      VERSION_FROM	=> 'lib/WEC/SSL/SSL.pm', # finds $VERSION
+     BUILD_REQUIRES	=> {
+	 # Only for the tests
+	 "Test::More"	=> "0.01",
+     },
      PREREQ_PM		=> {
          "Exporter::Tidy"	=> 0.05,	# For flexible exporting"
-         "Test::More"		=> 0.11,	# For the tests only
      }, # e.g., Module::Name => 1.1
-     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (AUTHOR		=> 'Ton Hospel <WEC-SSL-SSL@ton.iguana.be>') : ()),
+     AUTHOR		=> 'Ton Hospel <WEC-SSL-SSL@ton.iguana.be>',
      # OPTIMIZE		=> "-g",
      LIBS		=> ["-L$openssl_path -L$openssl_path/lib -L$openssl_path/out32dll $libs"],
      INC 		=> "-I ../include -I$openssl_path/include -I$openssl_path/inc32",
