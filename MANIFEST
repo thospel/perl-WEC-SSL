@@ -189,7 +189,6 @@ Utils/t/00_load.t
 Utils/t/01_utils.t
 Utils/t/02_error.t
 Utils/t/03_taint.t
-WEC-SSL-0.01.tar.gz
 X509/MANIFEST
 X509/MANIFEST.SKIP
 X509/Makefile.PL
