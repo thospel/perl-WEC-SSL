@@ -7,6 +7,8 @@ use ExtUtils::MakeMaker;
 use vars qw($VERSION);
 $VERSION = "1.000";
 
+settings();
+
 WriteMakefile
     (NAME		=> 'WEC::SSL',
      VERSION		=> '0.01',
@@ -21,7 +23,7 @@ WriteMakefile
          PM_FILTER	=> '$(PERL) -p -e1',
      ) : (),
      clean		=> {
-         FILES => '$(DISTNAME).ppd ppm cover_db',
+         FILES => '$(DISTNAME).ppd ppm cover_db nytprof nytprof.out* md5-versions.old',
      },
 );
 
@@ -74,7 +76,7 @@ ppm_uninstall:
 	ppm uninstall $(DISTNAME)
 EOT
 
-undef &postamble;	## no critic (ProhibitUselessNoCritic ProhibitAmpersandSigils)
+undef &postamble;	## no critic (UselessNoCritic AmpersandSigils)
 }
 {
     package MY;
@@ -84,16 +86,21 @@ undef &postamble;	## no critic (ProhibitUselessNoCritic ProhibitAmpersandSigils)
 }
 # END MY
 
-BEGIN {
-package MY;
-use vars qw(%postamble);
+sub settings {
+    package MY;
+    our %postamble;
 
-$postamble{ppport_h} = <<'EOF';
+    $postamble{version_check} = <<'EOF';
+all ::
+	$(NOECHO) $(FULLPERL) version_check "$(NAME)" "$(DESTINSTALLSITELIB)" "$(VERSION)" "$(VERSION_FROM)"
+EOF
+
+    $postamble{ppport_h} = <<'EOF';
 ppport:
 	$(PERLRUN) -MDevel::PPPort -e "Devel::PPPort::WriteFile(qq(include/ppport.h))"
 EOF
 
-$postamble{ppport} = <<'EOF';
+    $postamble{ppport} = <<'EOF';
 $(XS_FILES): ../include/ppport.h
 	$(PERLRUN) ../include/ppport.h --copy .patched $(XS_FILES)
 	$(PERLRUN) -e 'for (@ARGV) { local $$/; open(my $$in, "<", "$$_.patched") || die "Could not open \x27$$_.patched\x27: $$!"; my $$content = <$$in>; $$content =~ s{\Q#include "ppport.h"\E\n}{}; close($$in) || die "Error closing \x27$$_.patched\x27: $$!"; open(my $$out, ">", "$$_.patched") || die "Could not write to \x27$$_.patched\x27: $$!"; print($$out $$content) || die "Error writing to \x27$$_.patched\x27: $$!"; close($$out) || die "Could not close \x27$$_.patched\x27: $$!"; rename("$$_.patched", $$_) || die "Could not rename \x27$$_\x27 to \x27$$_\x27: $$!"; }' $(XS_FILES)

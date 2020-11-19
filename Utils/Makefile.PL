@@ -98,7 +98,7 @@ BEGIN {
 
     use vars qw(%postamble);
 
-undef &postamble;	## no critic (ProhibitUselessNoCritic ProhibitAmpersandSigils)
+undef &postamble;	## no critic (UselessNoCritic AmpersandSigils)
 }
 {
     package MY;

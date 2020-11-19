@@ -204,3 +204,4 @@ t/00_load.t
 t/01_ssl.t
 t/make_manifest
 typemap
+version_check

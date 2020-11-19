@@ -3,7 +3,7 @@
 # `make test'. After `make install' it should work as `perl 090_print.t'
 # No taint checking in this test
 
-## no critic (ProhibitUselessNoCritic ProhibitMagicNumbers)
+## no critic (UselessNoCritic MagicNumbers)
 use strict;
 use warnings;
 use FindBin qw($Bin);
